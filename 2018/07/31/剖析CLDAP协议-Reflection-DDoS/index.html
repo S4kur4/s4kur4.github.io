@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang=en>
+<head><meta name="generator" content="Hexo 3.9.0">
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="description" content="前言2018年上半年，得益于Memcache近5万的反射放大倍数，DDoS的峰值流量已经达到了一个前所未有的新高度—1.7Tbps，这也使得Memcache DRDoS成为目前DDoS的中坚力量。而与MemcacheDRDoS相比，2016年Akamai曝光的CLDAP DRDoS虽然没有前者极高的效率，但是其56~70倍的放大倍数在DDoS家族中也依然是一名佼佼者，因此也应引起关注。 CLDAP">
+<meta property="og:type" content="article">
+<meta property="og:title" content="剖析CLDAP协议 Reflection DDoS">
+<meta property="og:url" content="https://0x0c.cc/2018/07/31/剖析CLDAP协议-Reflection-DDoS/index.html">
+<meta property="og:site_name" content="S4kur4">
+<meta property="og:description" content="前言2018年上半年，得益于Memcache近5万的反射放大倍数，DDoS的峰值流量已经达到了一个前所未有的新高度—1.7Tbps，这也使得Memcache DRDoS成为目前DDoS的中坚力量。而与MemcacheDRDoS相比，2016年Akamai曝光的CLDAP DRDoS虽然没有前者极高的效率，但是其56~70倍的放大倍数在DDoS家族中也依然是一名佼佼者，因此也应引起关注。 CLDAP">
+<meta property="og:locale" content="en">
+<meta property="og:image" content="https://i.loli.net/2018/07/31/5b5fc44a7658d.png">
+<meta property="og:image" content="https://i.loli.net/2018/07/31/5b5fc16ee8218.png">
+<meta property="og:image" content="https://i.loli.net/2018/07/31/5b5fd06cb965c.png">
+<meta property="og:image" content="https://i.loli.net/2018/07/31/5b5fd68793c82.png">
+<meta property="og:image" content="https://i.loli.net/2018/07/31/5b5fdba566e79.png">
+<meta property="og:image" content="https://i.loli.net/2018/07/31/5b5fe08653931.png">
+<meta property="og:image" content="https://i.loli.net/2018/07/31/5b5fe11cd0fba.png">
+<meta property="og:image" content="https://i.loli.net/2018/07/31/5b5ff7174b40d.png">
+<meta property="og:image" content="https://i.loli.net/2018/08/11/5b6e5c930f058.png">
+<meta property="og:image" content="https://i.loli.net/2018/08/11/5b6e63839260e.png">
+<meta property="og:image" content="https://i.loli.net/2018/07/31/5b60076bb1a4b.png">
+<meta property="og:image" content="https://i.loli.net/2018/08/11/5b6e6b7f2296f.png">
+<meta property="og:image" content="https://i.loli.net/2018/08/11/5b6e8dac34458.png">
+<meta property="og:image" content="https://i.loli.net/2018/08/11/5b6e91b9e5548.png">
+<meta property="og:image" content="https://i.loli.net/2018/08/11/5b6e9c3d782a3.png">
+<meta property="og:updated_time" content="2019-09-26T05:46:19.759Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="剖析CLDAP协议 Reflection DDoS">
+<meta name="twitter:description" content="前言2018年上半年，得益于Memcache近5万的反射放大倍数，DDoS的峰值流量已经达到了一个前所未有的新高度—1.7Tbps，这也使得Memcache DRDoS成为目前DDoS的中坚力量。而与MemcacheDRDoS相比，2016年Akamai曝光的CLDAP DRDoS虽然没有前者极高的效率，但是其56~70倍的放大倍数在DDoS家族中也依然是一名佼佼者，因此也应引起关注。 CLDAP">
+<meta name="twitter:image" content="https://i.loli.net/2018/07/31/5b5fc44a7658d.png">
+    
+    
+        
+          
+              <link rel="shortcut icon" href="/images/favicon.ico">
+          
+        
+        
+          
+            <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+          
+        
+        
+          
+            <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+          
+        
+    
+    <!-- title -->
+    <title>剖析CLDAP协议 Reflection DDoS</title>
+    <!-- styles -->
+    <link rel="stylesheet" href="/css/style.css">
+    <!-- persian styles -->
+    
+      <link rel="stylesheet" href="/css/rtl.css">
+    
+    <!-- rss -->
+    
+    
+</head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fas fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/about/">About</a></li>
+         
+          <li><a href="/archives/">Writing</a></li>
+         
+          <li><a href="/projects/">Projects</a></li>
+        
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" href="/2018/10/09/King：测量任意主机之间的网络延迟/"><i class="fas fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" href="#"><i class="fas fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" href="http://www.facebook.com/sharer.php?u=https://0x0c.cc/2018/07/31/剖析CLDAP协议-Reflection-DDoS/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://twitter.com/share?url=https://0x0c.cc/2018/07/31/剖析CLDAP协议-Reflection-DDoS/&text=剖析CLDAP协议 Reflection DDoS"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.linkedin.com/shareArticle?url=https://0x0c.cc/2018/07/31/剖析CLDAP协议-Reflection-DDoS/&title=剖析CLDAP协议 Reflection DDoS"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://pinterest.com/pin/create/bookmarklet/?url=https://0x0c.cc/2018/07/31/剖析CLDAP协议-Reflection-DDoS/&is_video=false&description=剖析CLDAP协议 Reflection DDoS"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=剖析CLDAP协议 Reflection DDoS&body=Check out this article: https://0x0c.cc/2018/07/31/剖析CLDAP协议-Reflection-DDoS/"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://getpocket.com/save?url=https://0x0c.cc/2018/07/31/剖析CLDAP协议-Reflection-DDoS/&title=剖析CLDAP协议 Reflection DDoS"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://reddit.com/submit?url=https://0x0c.cc/2018/07/31/剖析CLDAP协议-Reflection-DDoS/&title=剖析CLDAP协议 Reflection DDoS"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.stumbleupon.com/submit?url=https://0x0c.cc/2018/07/31/剖析CLDAP协议-Reflection-DDoS/&title=剖析CLDAP协议 Reflection DDoS"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://digg.com/submit?url=https://0x0c.cc/2018/07/31/剖析CLDAP协议-Reflection-DDoS/&title=剖析CLDAP协议 Reflection DDoS"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.tumblr.com/share/link?url=https://0x0c.cc/2018/07/31/剖析CLDAP协议-Reflection-DDoS/&name=剖析CLDAP协议 Reflection DDoS&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://news.ycombinator.com/submitlink?u=https://0x0c.cc/2018/07/31/剖析CLDAP协议-Reflection-DDoS/&t=剖析CLDAP协议 Reflection DDoS"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#前言"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#CLDAP协议缺陷"><span class="toc-number">2.</span> <span class="toc-text">CLDAP协议缺陷</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#CLDAP-Reflection-DDoS现状"><span class="toc-number">3.</span> <span class="toc-text">CLDAP Reflection DDoS现状</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#对Payload的改进和探索"><span class="toc-number">4.</span> <span class="toc-text">对Payload的改进和探索</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#影响面分析"><span class="toc-number">5.</span> <span class="toc-text">影响面分析</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#总结"><span class="toc-number">6.</span> <span class="toc-text">总结</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#参考"><span class="toc-number">7.</span> <span class="toc-text">参考</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4">
+        
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        剖析CLDAP协议 Reflection DDoS
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">S4kur4</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2018-07-31T05:21:07.000Z" itemprop="datePublished">2018-07-31</time>
+        
+      
+    </div>
+
+
+      
+
+      
+
+    </div>
+  </header>
+  
+
+  <div class="content" itemprop="articleBody">
+    <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>2018年上半年，得益于Memcache近5万的反射放大倍数，DDoS的峰值流量已经达到了一个前所未有的新高度—1.7Tbps，这也使得Memcache DRDoS成为目前DDoS的中坚力量。而与MemcacheDRDoS相比，2016年Akamai曝光的CLDAP DRDoS虽然没有前者极高的效率，但是其56~70倍的放大倍数在DDoS家族中也依然是一名佼佼者，因此也应引起关注。</p>
+<h2 id="CLDAP协议缺陷"><a href="#CLDAP协议缺陷" class="headerlink" title="CLDAP协议缺陷"></a>CLDAP协议缺陷</h2><p>轻量目录访问协议（LDAP）被定义在<a href="https://tools.ietf.org/html/rfc2251" target="_blank" rel="noopener">RFC2251</a>（LDAPv3）中，由于LDAP是以TCP字节流的方式进行数据传输，其必要的绑定操作和频繁的数据搜索查询会在一定程度消耗较多的TCP连接资源，于是IETF在1995年发布了面向无连接的轻量目录访问协议（CLDAP），官方文档为<a href="https://tools.ietf.org/html/rfc1798" target="_blank" rel="noopener">RFC1798</a>（2003年<a href="https://tools.ietf.org/html/rfc3352" target="_blank" rel="noopener">RFC3352</a>将CLDAP置为历史状态）。在CLDAP中只提供三种操作：searchRequest、searchResponse （searchResEntry和searchResDone）、abandonRequest，在不提供身份验证功能的情况下，客户端可以使用UDP数据报对LDAP服务器389端口发起操作请求。由于客户端发起searchRequest后服务端将返回searchResEntry和searchResDone两条应答消息，因此一般情况下执行该操作将具有较小数据包反射出较大数据包的效果，这一缺陷随即被利用进行反射放大DDoS攻击。</p>
+<img src="https://i.loli.net/2018/07/31/5b5fc44a7658d.png" alt="1" style="zoom: 25%;">
+
+<h2 id="CLDAP-Reflection-DDoS现状"><a href="#CLDAP-Reflection-DDoS现状" class="headerlink" title="CLDAP Reflection DDoS现状"></a>CLDAP Reflection DDoS现状</h2><p>根据Akamai SIRT发布的<a href="https://www.akamai.com/us/en/about/our-thinking/threat-advisories/connection-less-lightweight-directory-access-protocol-reflection-ddos-threat-advisory.jsp" target="_blank" rel="noopener">报告</a>，目前捕获到的CLDAP DRDoS最高峰值流量为24Gbps，最大反射倍数为70倍。由于CLDAP未被广泛运用，开源LDAP软件openLDAP早已不再支持UDP协议的请求。事实上，现阶段进行CLDAP DRDoS攻击被利用最多的服务是Windows服务器的活动目录服务Active Directory（AD）。通常AD服务会在TCP端口389上监听来自客户端的LDAP操作请求，同时也会在UDP端口389上使用CLDAP协议来等待执行rootDSE的搜索操作（rootDSE条目在AD服务配置时创建，且允许未经身份验证的客户端对服务器的配置状态、功能和扩展属性进行查询，也被称作“AD ping”）。一些Windows服务器的AD服务监听端口暴露在公网，进而被利用来执行rootDSE查询产生放大反射DDoS攻击，在Exploit-DB上已经有安全研究者公开了<a href="https://www.exploit-db.com/exploits/40703/" target="_blank" rel="noopener">Perl利用脚本</a>：。使用Nmap的ldap-rootdse脚本也可以对该缺陷进行扫描确认：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nmap -Pn -sSU -p 389,636 --script ldap-rootdse 123.123.123.123</span><br></pre></td></tr></table></figure>
+
+<img src="https://i.loli.net/2018/07/31/5b5fc16ee8218.png" alt="1" style="zoom: 30%;">
+
+<p>可见存在缺陷的服务器将会返回rootDSE的条目、条目属性等配置信息。</p>
+<h2 id="对Payload的改进和探索"><a href="#对Payload的改进和探索" class="headerlink" title="对Payload的改进和探索"></a>对Payload的改进和探索</h2><p>针对Exploit-DB中rootDSE CLDAP DRDoS的利用脚本，其Payload为：</p>
+<img src="https://i.loli.net/2018/07/31/5b5fd06cb965c.png" alt="1" style="zoom: 40%;">
+
+<p>由于LDAP和CLDAP在传输数据时是先将数据封装成为LDAPmessage消息体后使用ASN.1下的BER进行编码后再传输的，我们可以使用在线工具<a href="http://asn1-playground.oss.com/" target="_blank" rel="noopener">ASN.1 Playground</a>对此Payload进行还原（还原时需先编译加载RFC2251中对LDAPmessage的ASN.1结构体定义，也可以直接使用GitHub中相关研究者定义好的<a href="https://github.com/Kampbell/ISODE/blob/37f161e65f11348ef6fca2925d399d611df9f31b/isode%2B%2B/code/iso/itu/osi/asn1/asn/Lightweight-Directory-Access-Protocol-V3.asn" target="_blank" rel="noopener">asn文件</a>）：</p>
+<img src="https://i.loli.net/2018/07/31/5b5fd68793c82.png" alt="1" style="zoom: 50%;">
+
+<p>可以看出此Payload是一次searchRequest操作的BER编码，其对top类的objectClass必选属性进行查询。通过测试捕获，该Payload平均能达到50倍左右的反射放大效率。</p>
+<img src="https://i.loli.net/2018/07/31/5b5fdba566e79.png" alt="1" style="zoom: 40%;">
+
+<p>但是如果将解码出的LDAPmessage再重新编码回去，会发现BER编码位数减少，与公开的Payload相比缺失了一部分：</p>
+<img src="https://i.loli.net/2018/07/31/5b5fe08653931.png" alt="1" style="zoom: 50%;">
+
+<p>如果此编码可用，将会降低Payload长度（需要在末尾再补一个\x00作为LDAPmessage结尾）：</p>
+<img src="https://i.loli.net/2018/07/31/5b5fe11cd0fba.png" alt="1" style="zoom: 40%;">
+
+<p>通过与原Payload相比较，可以发现原来Payload多出的部分（\x30\x84…）其实上是一段LDAPmessage响应消息，因此在编码时被认为不应当出现在请求报文中，所以完全可以去掉（暂不清楚脚本原作者这里的意图）。测试捕获后发现，改进后的这段40字节的Payload可用，且可以将反射放大效率提升至平均73倍左右，相比UScert公布的56~70倍数据提升了近18%，目前在公开渠道也暂未找到更为精简的Payload：</p>
+<img src="https://i.loli.net/2018/07/31/5b5ff7174b40d.png" alt="1" style="zoom: 40%;">
+
+<p>事实上，要得到最精简的Payload，还是要回到协议本身。从RFC2251中可以看出searchRequest操作共有8个字段，而接收自定义输入的字段只有baseObject、filter、attributes三个。在上述40字节Payload基础上，我们能做文章的依然是filter字段和attributes字段。</p>
+<img src="https://i.loli.net/2018/08/11/5b6e5c930f058.png" alt="1" style="zoom: 40%;">
+
+<p>经过构造filter和attributes字段，我们得到了长度为31字节的更为精简的Payload。该Payload能达到均值约89倍的反射放大效率，相比UScert公布的数据又提升了41%，如果以Akamai捕获到的最高反射数据包大小3662字节计算，新的Payload能达到最高118倍的反射放大倍数，这将刷新目前CLDAP DRDoS理论放大倍数数据：</p>
+<img src="https://i.loli.net/2018/08/11/5b6e63839260e.png" alt="1" style="zoom: 40%;">
+
+<h2 id="影响面分析"><a href="#影响面分析" class="headerlink" title="影响面分析"></a>影响面分析</h2><p>我们在ZoomEye中通过搜索比较发现，存在缺陷的Windows服务器具有特定的banner信息：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">0\x84\x00\x00\x00\x10\x02\x01\x01a\x84\x00\x00\x00\x07\n\x01\x00\x04\x00\x04\x00</span><br></pre></td></tr></table></figure>
+
+<p>结合编码中的每一个标志位来看，该banner信息与LDAP服务器bindResponse响应报文编码十分相似，因此推断出现该banner信息的原因，是由于ZoomEye扫描引擎在扫描到存在缺陷的LDAP服务器时服务器做出了一次绑定操作的响应，且告知客户端绑定成功，这也是在客户端searchRequest之前的必要操作：</p>
+<img src="https://i.loli.net/2018/07/31/5b60076bb1a4b.png" alt="1" style="zoom: 33%;">
+
+<p>使用此banner规则在ZoomEye中搜索共有214673条记录，约占所有LDAP服务器总数411527的52.2%：</p>
+<img src="https://i.loli.net/2018/08/11/5b6e6b7f2296f.png" alt="1" style="zoom: 25%;">
+
+<p>考虑到不同服务器在不同时间节点上会出现配置上的变动，于是我们以2015、2016、2017这三年作为区分，分别采集前1000条数据对服务器缺陷进行有效性验证。结果如下表所示：</p>
+<img src="https://i.loli.net/2018/08/11/5b6e8dac34458.png" alt="1" style="zoom: 40%;">
+
+<p>按照得出的占比，可以估算出目前互联网中存在缺陷的服务器总数：</p>
+<img src="https://i.loli.net/2018/08/11/5b6e91b9e5548.png" alt="1" style="zoom: 40%;">
+
+<p>因此我们认为，目前互联网中至少存在2万台Windows服务器存在被利用进行CLDAP DRDoS攻击的风险，当然这仍然依赖于ZoomEye所提供的数据，真实情况有更多。同时，我们获取了这3000条数据中153台缺陷服务器的反射数据包，其中最大的数据包长度为3208字节，最小的数据包长度为1918字节，153个数据包平均包长度为2665字节。根据这些捕获到的数据，现阶段CLDAP DRDoS的反射放大倍数应当为62~103倍，平均反射放大倍数为86倍。</p>
+<img src="https://i.loli.net/2018/08/11/5b6e9c3d782a3.png" alt="1" style="zoom: 28%;">
+
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>本文对CLDAP协议的缺陷以及其造成反射放大DDoS攻击的现状进行了介绍，同时对目前公开的攻击载荷Payload进行了改造，并进一步探索出了更精简的Payload，有效提升了攻击时的反射放大效率，最后借助ZoomEye对互联网中受影响的Windows服务器进行了统计与分析。当前的CLDAP DRDoS攻击主要是由于Windows服务器活动目录服务缺陷所引起，在防范上首先也应做到对389端口和636端口的限制，即确保端口不外漏或客户端IP白名单机制，也可以参考<a href="https://people.apache.org/~elecharny/ldapcon/Andrew%20Findlay-paper.pdf" target="_blank" rel="noopener">LDAP安全最佳实践</a>。</p>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><p><a href="https://blog.netlab.360.com/memcache-ddos-ii-numbers-and-charts-by-ddosmon/" target="_blank" rel="noopener">Memcache UDP反射放大攻击II：最近的数据分析</a><br><a href="https://kb.iweb.com/hc/en-us/articles/115001073692-Guide-to-Microsoft-Active-Directory-rootDSE-C-LDAP-security-issues" target="_blank" rel="noopener">Guide to Microsoft Active Directory rootDSE/C-LDAP security issues</a><br><a href="https://www.us-cert.gov/ncas/alerts/TA14-017A" target="_blank" rel="noopener">ALert(TA14-017A) UDP-Based Amplification Attacks</a><br><a href="https://ldapwiki.com/" target="_blank" rel="noopener">LDAP Wiki</a><br><a href="https://www.akamai.com/us/en/about/our-thinking/threat-advisories/connection-less-lightweight-directory-access-protocol-reflection-ddos-threat-advisory.jsp" target="_blank" rel="noopener">CLDAP Reflection DDoS</a><br><a href="https://docs.microsoft.com/en-us/windows-server/identity/ad-ds/plan/security-best-practices/best-practices-for-securing-active-directory" target="_blank" rel="noopener">Best Practices for Security Active Directory</a><br><a href="https://people.apache.org/~elecharny/ldapcon/Andrew%20Findlay-paper.pdf" target="_blank" rel="noopener">Best Practices in LDAP Security</a></p>
+<p><strong>* 转载请注明作者及来源</strong></p>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/about/">About</a></li>
+         
+          <li><a href="/archives/">Writing</a></li>
+         
+          <li><a href="/projects/">Projects</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#前言"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#CLDAP协议缺陷"><span class="toc-number">2.</span> <span class="toc-text">CLDAP协议缺陷</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#CLDAP-Reflection-DDoS现状"><span class="toc-number">3.</span> <span class="toc-text">CLDAP Reflection DDoS现状</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#对Payload的改进和探索"><span class="toc-number">4.</span> <span class="toc-text">对Payload的改进和探索</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#影响面分析"><span class="toc-number">5.</span> <span class="toc-text">影响面分析</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#总结"><span class="toc-number">6.</span> <span class="toc-text">总结</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#参考"><span class="toc-number">7.</span> <span class="toc-text">参考</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" href="http://www.facebook.com/sharer.php?u=https://0x0c.cc/2018/07/31/剖析CLDAP协议-Reflection-DDoS/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://twitter.com/share?url=https://0x0c.cc/2018/07/31/剖析CLDAP协议-Reflection-DDoS/&text=剖析CLDAP协议 Reflection DDoS"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.linkedin.com/shareArticle?url=https://0x0c.cc/2018/07/31/剖析CLDAP协议-Reflection-DDoS/&title=剖析CLDAP协议 Reflection DDoS"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://pinterest.com/pin/create/bookmarklet/?url=https://0x0c.cc/2018/07/31/剖析CLDAP协议-Reflection-DDoS/&is_video=false&description=剖析CLDAP协议 Reflection DDoS"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=剖析CLDAP协议 Reflection DDoS&body=Check out this article: https://0x0c.cc/2018/07/31/剖析CLDAP协议-Reflection-DDoS/"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://getpocket.com/save?url=https://0x0c.cc/2018/07/31/剖析CLDAP协议-Reflection-DDoS/&title=剖析CLDAP协议 Reflection DDoS"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://reddit.com/submit?url=https://0x0c.cc/2018/07/31/剖析CLDAP协议-Reflection-DDoS/&title=剖析CLDAP协议 Reflection DDoS"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.stumbleupon.com/submit?url=https://0x0c.cc/2018/07/31/剖析CLDAP协议-Reflection-DDoS/&title=剖析CLDAP协议 Reflection DDoS"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://digg.com/submit?url=https://0x0c.cc/2018/07/31/剖析CLDAP协议-Reflection-DDoS/&title=剖析CLDAP协议 Reflection DDoS"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.tumblr.com/share/link?url=https://0x0c.cc/2018/07/31/剖析CLDAP协议-Reflection-DDoS/&name=剖析CLDAP协议 Reflection DDoS&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://news.ycombinator.com/submitlink?u=https://0x0c.cc/2018/07/31/剖析CLDAP协议-Reflection-DDoS/&t=剖析CLDAP协议 Reflection DDoS"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fas fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fas fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fas fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy; 2019 S4kur4
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/about/">About</a></li>
+         
+          <li><a href="/archives/">Writing</a></li>
+         
+          <li><a href="/projects/">Projects</a></li>
+        
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+<link rel="stylesheet" href="/lib/justified-gallery/css/justifiedGallery.min.css">
+
+    <!-- jquery -->
+<script src="/lib/jquery/jquery.min.js"></script>
+<script src="/lib/justified-gallery/js/jquery.justifiedGallery.min.js"></script>
+<!-- clipboard -->
+
+  <script src="/lib/clipboard/clipboard.min.js"></script>
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="far fa-clone"></i>';
+    btn += '</span>'; 
+    // mount it!
+    $(".highlight .code pre").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      target: function(trigger) {
+        return trigger.nextElementSibling;
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+<script src="/js/main.js"></script>
+<!-- search -->
+
+<!-- Google Analytics -->
+
+<!-- Baidu Analytics -->
+
+<!-- Disqus Comments -->
+
+
+</body>
+</html>

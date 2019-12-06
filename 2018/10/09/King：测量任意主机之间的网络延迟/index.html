@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang=en>
+<head><meta name="generator" content="Hexo 3.9.0">
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="description" content="初识KingKing由来自华盛顿大学的Krishna P. Gummadi于2002年提出，源代码在这里，也可以在这里查看该研究的论文成果和详细介绍。King的核心思路是将测量任意两台主机间的网络延迟转化为测量两台DNS服务器之间的网络延迟，得到一个较精确的近似值。通过实验与实际情况下的值对比，这个测量值基本与实际的网络延迟值相差无几，准确率非常高。可以用下面的图来描述一下King的脑洞：   K">
+<meta property="og:type" content="article">
+<meta property="og:title" content="King：测量任意主机之间的网络延迟">
+<meta property="og:url" content="https://0x0c.cc/2018/10/09/King：测量任意主机之间的网络延迟/index.html">
+<meta property="og:site_name" content="S4kur4">
+<meta property="og:description" content="初识KingKing由来自华盛顿大学的Krishna P. Gummadi于2002年提出，源代码在这里，也可以在这里查看该研究的论文成果和详细介绍。King的核心思路是将测量任意两台主机间的网络延迟转化为测量两台DNS服务器之间的网络延迟，得到一个较精确的近似值。通过实验与实际情况下的值对比，这个测量值基本与实际的网络延迟值相差无几，准确率非常高。可以用下面的图来描述一下King的脑洞：   K">
+<meta property="og:locale" content="en">
+<meta property="og:image" content="https://i.imgur.com/GQfqGlC.png">
+<meta property="og:image" content="https://i.imgur.com/h9Lv8I2.png">
+<meta property="og:image" content="https://i.imgur.com/eX2SG9R.png">
+<meta property="og:image" content="https://i.imgur.com/pxQLCWX.png">
+<meta property="og:image" content="https://i.imgur.com/Dx57Qua.png">
+<meta property="og:image" content="https://i.imgur.com/cQLneQi.png">
+<meta property="og:image" content="https://i.imgur.com/MEM6qUf.png">
+<meta property="og:image" content="https://i.imgur.com/wq6scIQ.png">
+<meta property="og:image" content="https://i.imgur.com/Jms4Sw9.png">
+<meta property="og:updated_time" content="2019-09-26T05:20:26.004Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="King：测量任意主机之间的网络延迟">
+<meta name="twitter:description" content="初识KingKing由来自华盛顿大学的Krishna P. Gummadi于2002年提出，源代码在这里，也可以在这里查看该研究的论文成果和详细介绍。King的核心思路是将测量任意两台主机间的网络延迟转化为测量两台DNS服务器之间的网络延迟，得到一个较精确的近似值。通过实验与实际情况下的值对比，这个测量值基本与实际的网络延迟值相差无几，准确率非常高。可以用下面的图来描述一下King的脑洞：   K">
+<meta name="twitter:image" content="https://i.imgur.com/GQfqGlC.png">
+    
+    
+        
+          
+              <link rel="shortcut icon" href="/images/favicon.ico">
+          
+        
+        
+          
+            <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+          
+        
+        
+          
+            <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+          
+        
+    
+    <!-- title -->
+    <title>King：测量任意主机之间的网络延迟</title>
+    <!-- styles -->
+    <link rel="stylesheet" href="/css/style.css">
+    <!-- persian styles -->
+    
+      <link rel="stylesheet" href="/css/rtl.css">
+    
+    <!-- rss -->
+    
+    
+</head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fas fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/about/">About</a></li>
+         
+          <li><a href="/archives/">Writing</a></li>
+         
+          <li><a href="/projects/">Projects</a></li>
+        
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" href="/2019/09/25/内网横移之WinRM/"><i class="fas fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" href="/2018/07/31/剖析CLDAP协议-Reflection-DDoS/"><i class="fas fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" href="#"><i class="fas fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" href="http://www.facebook.com/sharer.php?u=https://0x0c.cc/2018/10/09/King：测量任意主机之间的网络延迟/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://twitter.com/share?url=https://0x0c.cc/2018/10/09/King：测量任意主机之间的网络延迟/&text=King：测量任意主机之间的网络延迟"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.linkedin.com/shareArticle?url=https://0x0c.cc/2018/10/09/King：测量任意主机之间的网络延迟/&title=King：测量任意主机之间的网络延迟"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://pinterest.com/pin/create/bookmarklet/?url=https://0x0c.cc/2018/10/09/King：测量任意主机之间的网络延迟/&is_video=false&description=King：测量任意主机之间的网络延迟"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=King：测量任意主机之间的网络延迟&body=Check out this article: https://0x0c.cc/2018/10/09/King：测量任意主机之间的网络延迟/"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://getpocket.com/save?url=https://0x0c.cc/2018/10/09/King：测量任意主机之间的网络延迟/&title=King：测量任意主机之间的网络延迟"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://reddit.com/submit?url=https://0x0c.cc/2018/10/09/King：测量任意主机之间的网络延迟/&title=King：测量任意主机之间的网络延迟"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.stumbleupon.com/submit?url=https://0x0c.cc/2018/10/09/King：测量任意主机之间的网络延迟/&title=King：测量任意主机之间的网络延迟"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://digg.com/submit?url=https://0x0c.cc/2018/10/09/King：测量任意主机之间的网络延迟/&title=King：测量任意主机之间的网络延迟"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.tumblr.com/share/link?url=https://0x0c.cc/2018/10/09/King：测量任意主机之间的网络延迟/&name=King：测量任意主机之间的网络延迟&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://news.ycombinator.com/submitlink?u=https://0x0c.cc/2018/10/09/King：测量任意主机之间的网络延迟/&t=King：测量任意主机之间的网络延迟"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#初识King"><span class="toc-number">1.</span> <span class="toc-text">初识King</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#King是如何工作的"><span class="toc-number">2.</span> <span class="toc-text">King是如何工作的</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#第一阶段，找到离一台主机最近的权威域名服务器。"><span class="toc-number">2.1.</span> <span class="toc-text">第一阶段，找到离一台主机最近的权威域名服务器。</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#第二阶段，使两台权威域名服务器之间进行查询，计算两台域名服务器间的网络延迟。"><span class="toc-number">2.2.</span> <span class="toc-text">第二阶段，使两台权威域名服务器之间进行查询，计算两台域名服务器间的网络延迟。</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#King的实际使用情况"><span class="toc-number">3.</span> <span class="toc-text">King的实际使用情况</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#King存在的问题"><span class="toc-number">4.</span> <span class="toc-text">King存在的问题</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#问题1：无法准确找到负责解析主机的权威域名服务器，以至于使结果准确性大打折扣"><span class="toc-number">4.1.</span> <span class="toc-text">问题1：无法准确找到负责解析主机的权威域名服务器，以至于使结果准确性大打折扣</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#问题2：负责解析主机的权威域名服务器有多台，导致测量结果不准确"><span class="toc-number">4.2.</span> <span class="toc-text">问题2：负责解析主机的权威域名服务器有多台，导致测量结果不准确</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#问题3：大量无用的缓存对主机权威域名服务器造成性能影响"><span class="toc-number">4.3.</span> <span class="toc-text">问题3：大量无用的缓存对主机权威域名服务器造成性能影响</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#问题4：权威域名服务器之前存在转发器，使得测量结果受到影响"><span class="toc-number">4.4.</span> <span class="toc-text">问题4：权威域名服务器之前存在转发器，使得测量结果受到影响</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#问题5：不能保证找到的服务器允许任意主机对其进行递归查询"><span class="toc-number">4.5.</span> <span class="toc-text">问题5：不能保证找到的服务器允许任意主机对其进行递归查询</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#第一阶段，找到离一台主机最近的递归域名服务器。"><span class="toc-number">4.6.</span> <span class="toc-text">第一阶段，找到离一台主机最近的递归域名服务器。</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#第二阶段，使两台域名服务器之间进行查询，计算两台域名服务器间的网络延迟。"><span class="toc-number">4.7.</span> <span class="toc-text">第二阶段，使两台域名服务器之间进行查询，计算两台域名服务器间的网络延迟。</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#King的拓展运用"><span class="toc-number">5.</span> <span class="toc-text">King的拓展运用</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#参考"><span class="toc-number">6.</span> <span class="toc-text">参考</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4">
+        
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        King：测量任意主机之间的网络延迟
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">S4kur4</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2018-10-09T05:11:31.000Z" itemprop="datePublished">2018-10-09</time>
+        
+      
+    </div>
+
+
+      
+
+      
+
+    </div>
+  </header>
+  
+
+  <div class="content" itemprop="articleBody">
+    <h2 id="初识King"><a href="#初识King" class="headerlink" title="初识King"></a>初识King</h2><p>King由来自华盛顿大学的Krishna P. Gummadi于2002年提出，源代码在<a href="https://people.mpi-sws.org/~gummadi/king/king.tar.gz" target="_blank" rel="noopener">这里</a>，也可以在<a href="https://people.mpi-sws.org/~gummadi/king/" target="_blank" rel="noopener">这里</a>查看该研究的论文成果和详细介绍。King的核心思路是将测量任意两台主机间的网络延迟转化为测量两台DNS服务器之间的网络延迟，得到一个较精确的近似值。通过实验与实际情况下的值对比，这个测量值基本与实际的网络延迟值相差无几，准确率非常高。可以用下面的图来描述一下King的脑洞：</p>
+<img src="https://i.imgur.com/GQfqGlC.png" alt="1" style="zoom: 25%;">
+
+<h2 id="King是如何工作的"><a href="#King是如何工作的" class="headerlink" title="King是如何工作的"></a>King是如何工作的</h2><p>King的主要工作有两个阶段：第一阶段是找到被测算主机附近离它们最近的DNS服务器（一般是权威域名服务器）；第二阶段，使两台DNS服务器之间进行查询计算出网络延迟。</p>
+<h3 id="第一阶段，找到离一台主机最近的权威域名服务器。"><a href="#第一阶段，找到离一台主机最近的权威域名服务器。" class="headerlink" title="第一阶段，找到离一台主机最近的权威域名服务器。"></a>第一阶段，找到离一台主机最近的权威域名服务器。</h3><p>如果已知一台主机的域名，可以通过其NS记录找到所在区域的权威域名服务器。在地理位置上，权威域名服务器一般都被部署在距离主机很近的地方。而如果已知一台主机的IP地址，可以构造其包含in-addr.arpa的逆向解析域，通过查询IP的PTR记录进而找到负责解析出该IP的权威域名服务器。</p>
+<p>如果一台主机被多个权威域名服务器解析，类似于以下情况：</p>
+<img src="https://i.imgur.com/h9Lv8I2.png" alt="1" style="zoom: 45%;">
+
+<p>此时King会通过比较每个权威域名服务器的域名和IP做出合理选择，在上面的例子中King会选择IP为192.1.2.3的权威域名服务器ns.tcc.tophant.com作为测算服务器。</p>
+<h3 id="第二阶段，使两台权威域名服务器之间进行查询，计算两台域名服务器间的网络延迟。"><a href="#第二阶段，使两台权威域名服务器之间进行查询，计算两台域名服务器间的网络延迟。" class="headerlink" title="第二阶段，使两台权威域名服务器之间进行查询，计算两台域名服务器间的网络延迟。"></a>第二阶段，使两台权威域名服务器之间进行查询，计算两台域名服务器间的网络延迟。</h3><p>现假设我们将以第三方客户端C的身份测量主机A与B之间的网络延迟，通过第一阶段的工作，我们已经找到了分别位于A附近和B附近的两台DNS服务器NS_A、NS_B，它们分别负责a.com和b.com的权威域名解析。其中，L为A与B之间的网络延迟，L’为NS_A与NS_B之间的网络延迟，并且L≈L’。L1和L2分别为C与NS_A、NS_B间的网络延迟。</p>
+<img src="https://i.imgur.com/eX2SG9R.png" alt="1" style="zoom: 50%;">
+
+<p>现阶段的目标，是要得到L’的值，那如何计算出L’呢？</p>
+<p>我们可以做如下操作：</p>
+<pre><code>1. 以C向NS_A发起一次递归DNS查询请求，令其解析一个b.com的随机子域名fh9fvnyro802sv.b.com。
+2. 由于NS_B负责对b.com进行权威解析，因此NS_A会将此次请求递归转发至NS_B。
+3. NS_B收到请求后无法解析出fh9fvnyro802sv.b.com，向NS_A反馈NXDOMAIN消息。
+4. NS_A向C转发NXDOMAIN。</code></pre><p>图示如下：</p>
+<img src="https://i.imgur.com/pxQLCWX.png" alt="1" style="zoom: 50%;">
+
+<p>然而上述操作仍需有一个前提。当C向NS_A发起fh9fvnyro802sv.b.com的查询请求时，如果NS_A本地并没有b.com的权威域名服务器缓存记录，其会遍历DNS树寻找NS_B，这将使测量结果不够准确。因此必须确保NS_A提前缓存b.com的权威域名服务器记录，只需要在上述操作之前提前进行一次即可。</p>
+<p>最后，通过上面的操作，我们可以得到整个请求响应过程的网络延迟，也就是L1+L’，随后只需要由C向NS_A发起任意的DNS查询请求或者直接使用Ping，就能得到L1，进而最终得出L’的值。当然，将上述操作的NS_A和NS_B互换，通过向NS_B发起a.com的随机子域名得到L2+L’也能得出L’。</p>
+<h2 id="King的实际使用情况"><a href="#King的实际使用情况" class="headerlink" title="King的实际使用情况"></a>King的实际使用情况</h2><p>King在源码中将测量过程分为4步：</p>
+<pre><code>STAGE1. 构造逆向解析域查找两台主机附近的DNS服务器，它们须能接收任意主机的递归查询请求
+STAGE2. 再次检查这两批DNS服务器，确定测量的方向(L1+L&apos;或者L2+L&apos;)
+STAGE3. 从两批DNS服务器列表里根据IP段匹配的情况找到最优的两个
+STAGE4. 开始构造DNS请求并计算出延迟</code></pre><p>我们在CentOS7上编译了King的源码，并挑选一些IP进行实际测试：</p>
+<img src="https://i.imgur.com/Dx57Qua.png" alt="1" style="zoom: 35%;">
+
+<img src="https://i.imgur.com/cQLneQi.png" alt="1" style="zoom: 35%;">
+
+<p>经过一番测试，可以发现King在实际使用过程中效果不尽人意，程序运行在STAGE1阶段基本就会发生错误而退出。</p>
+<h2 id="King存在的问题"><a href="#King存在的问题" class="headerlink" title="King存在的问题"></a>King存在的问题</h2><p>虽然King从理论上证明了方法的可行性，但却避免不了其本身存在的问题。而这些问题也间接说明网络延迟测量的工程应用是极其困难的。经过实际测试并查询资料，King还存在以下几个问题，同时也衍生出了一些改进的方法：</p>
+<h3 id="问题1：无法准确找到负责解析主机的权威域名服务器，以至于使结果准确性大打折扣"><a href="#问题1：无法准确找到负责解析主机的权威域名服务器，以至于使结果准确性大打折扣" class="headerlink" title="问题1：无法准确找到负责解析主机的权威域名服务器，以至于使结果准确性大打折扣"></a>问题1：无法准确找到负责解析主机的权威域名服务器，以至于使结果准确性大打折扣</h3><p>如果某个主机使用了类似于阿里云的DNS云解析产品，权威域名服务器默认由阿里云提供，其与主机之间的距离无法确定。</p>
+<p>另外，一些DNS服务器仅仅配置了正向解析功能，而并未配置反向解析，因此通过构造逆向解析域寻找主机PTR记录的方法不可行。甚至可能某个主机并不需要提供Web服务，因此并没有对应的域名，PTR记录为空。</p>
+<h3 id="问题2：负责解析主机的权威域名服务器有多台，导致测量结果不准确"><a href="#问题2：负责解析主机的权威域名服务器有多台，导致测量结果不准确" class="headerlink" title="问题2：负责解析主机的权威域名服务器有多台，导致测量结果不准确"></a>问题2：负责解析主机的权威域名服务器有多台，导致测量结果不准确</h3><p>在DNS规范文档RFC1034和RFC1035中，建议将解析同一域名的多个权威域名服务器部署在不同地理位置上，以此确保域名解析服务的高可用性。对于这种情况，King无法保证每次测量的结果是准确的，因为发出的解析请求可能会被转发至不同的权威域名服务器进行解析，这些服务器在地理分布上可能是分散的。</p>
+<h3 id="问题3：大量无用的缓存对主机权威域名服务器造成性能影响"><a href="#问题3：大量无用的缓存对主机权威域名服务器造成性能影响" class="headerlink" title="问题3：大量无用的缓存对主机权威域名服务器造成性能影响"></a>问题3：大量无用的缓存对主机权威域名服务器造成性能影响</h3><p>在上面的操作例子中，如果C向NS_A查询大量的b.com的随机子域名，将在NS_A缓存中插入大量无用的关于b.com的缓存，这将非常影响NS_A的性能，甚至可以理解为缓存污染攻击。</p>
+<h3 id="问题4：权威域名服务器之前存在转发器，使得测量结果受到影响"><a href="#问题4：权威域名服务器之前存在转发器，使得测量结果受到影响" class="headerlink" title="问题4：权威域名服务器之前存在转发器，使得测量结果受到影响"></a>问题4：权威域名服务器之前存在转发器，使得测量结果受到影响</h3><p>一些域名会在权威域名服务器之前配置转发器以降低对权威域名服务器的大量请求，而King无法感知到转发器的存在，因此在网络延迟测量时，两台权威域名服务器之间的查询可能是经过了转发器转发，类似于下图所示：</p>
+<img src="https://i.imgur.com/MEM6qUf.png" alt="1" style="zoom: 50%;">
+
+<p>King在论文中提到了解决此问题的第二种测量方法，该方法也被后来的研究者称为Direct King。</p>
+<p>首先引入一个自己可以控制的DNS服务器NS_C，该服务器负责对我们自己的域名f.com进行权威解析。接下来我们做如下操作：</p>
+<pre><code>1. 使用C向NS_A发出查询b.f.com的NS记录的请求（NS_A无缓存）。
+2. NS_A接收到查询请求，会将该请求递归至f.com权威域名解析服务器NS_C。
+3. 由于NS_C可控，我们可以随意改变并构造DNS响应消息，因此将b.f.com的NS记录伪造为NS_B。随后NS_C将NS_B的IP地址x.x.x.x告诉NS_A。
+4. NS_A收到此消息后反馈至C，并在本地缓存。
+5. 使用C向NS_A发出查询随机域名f39adf8.b.f.com的A记录的请求。
+6. 由于NS_A已经将b.f.com的NS记录进行缓存，因此会递归向NS_B查询f39adf8.b.f.com的A记录。
+7. 而NS_B必定无法找到f39adf8.b.f.com的A记录，因此会向NS_A反馈NXDOMAIN消息。
+8. NS_A收到NXDOMAIN消息后继续反馈给C。</code></pre><p>上述操作的图示如下：</p>
+<img src="https://i.imgur.com/wq6scIQ.png" alt="1" style="zoom: 50%;">
+
+<p>图中红色部分的请求响应网络延迟为L1+L’，随后使用相同的方法即可得出L’的值。</p>
+<p>此过程最关键的两个操作是 伪造NS记录 以及 DNS缓存投毒 ，能让测量过程绕过转发器实现对NS_B的定向选择。由于f.com域名由我们控制，因此产生的缓存投毒影响也非常小。但是此过程的操作复杂度很高，几乎无法工程运用。</p>
+<h3 id="问题5：不能保证找到的服务器允许任意主机对其进行递归查询"><a href="#问题5：不能保证找到的服务器允许任意主机对其进行递归查询" class="headerlink" title="问题5：不能保证找到的服务器允许任意主机对其进行递归查询"></a>问题5：不能保证找到的服务器允许任意主机对其进行递归查询</h3><p>从King的论文中可知，大约72%的DNS服务器接收任意客户端的递归查询请求，当然这已经是16年前的数据。经过实际测试，一些安全性较高的DNS服务器通常都会拒绝远端的递归查询请求。</p>
+<p>为了解决上述问题，Derek Leonard和Dmitri Loguinov提出了一个King的改进型——Turbo King。</p>
+<p>在开始网络延迟测量之前，Turbo King维护了一个互联网中所有递归域名服务器和非递归域名服务器的列表S，其采用自建的爬虫深度爬取，并且数据会不断更新。S中服务器数量越多，对Turbo King的测量就越有效。</p>
+<h3 id="第一阶段，找到离一台主机最近的递归域名服务器。"><a href="#第一阶段，找到离一台主机最近的递归域名服务器。" class="headerlink" title="第一阶段，找到离一台主机最近的递归域名服务器。"></a>第一阶段，找到离一台主机最近的递归域名服务器。</h3><p>Turbo King通过将公开的<a href="http://archive.routeviews.org/" target="_blank" rel="noopener">BGP数据</a>与列表S比对，将一个主机的IP关联至一个递归域名服务器上，如果无法找到合适的递归域名服务器，就通过IP前缀（A类、B类、C类）进行扫描查找，或者按照King的方法选择一个默认的权威域名服务器。</p>
+<h3 id="第二阶段，使两台域名服务器之间进行查询，计算两台域名服务器间的网络延迟。"><a href="#第二阶段，使两台域名服务器之间进行查询，计算两台域名服务器间的网络延迟。" class="headerlink" title="第二阶段，使两台域名服务器之间进行查询，计算两台域名服务器间的网络延迟。"></a>第二阶段，使两台域名服务器之间进行查询，计算两台域名服务器间的网络延迟。</h3><p>Turbo King有两种工作模式：被动模式（默认）和主动模式。被动模式下，通过等待请求记录时间戳的方式计算网络延迟；主动模式下，Turbo King直接采用列表S中的服务器，计算一个给定数量的N*N测量矩阵，并计算出N个样本数据。</p>
+<p>Turbo King采用C/S的软件架构，分别将DNSClient和DNSServer部署在我们自己拥有的客户端C以及域名服务器NS_C上。其测量方法如下：</p>
+<pre><code>1. 使用C向NS_A发出查询t.f.com的A记录的请求（NS_A无缓存），记录此时的时间戳t1。
+2. NS_A接收到查询请求，会向负责解析f.com的权威域名解析服务器NS_C进行迭代查询。
+3. 由于NS_C由我们控制，因此告诉NS_A负责此域名的权威域名服务器为NS_B，即x.x.x.x，同时将消息TTL值设置为0避免缓存，记录下此时的时间戳t2。
+4. NS_A收到此消息后向NS_B查询t.f.com。
+5. 而NS_B必定无法找到t.f.com的A记录，因此会向NS_A反馈NXDOMAIN消息。
+6. NS_A收到NXDOMAIN消息后继续反馈给C，记录下此时的时间戳t3。</code></pre><p>上述操作图示如下：</p>
+<img src="https://i.imgur.com/Jms4Sw9.png" alt="1" style="zoom: 50%;">
+
+<p>最后，计算得到NS_A与NS_B之间的网络延迟L’即为(t3-t2)-(t2-t1)。</p>
+<p>从Turbo King的操作过程来看，其基本解决了King存在的诸多问题，也避免了对域名服务器本身造成缓存污染，方法上算是对Direct King的一种精简化。但Turbo King需要维护一个拥有全网所有域名服务器的列表S，这部分工作量非常大，也需要耗费很多资源。</p>
+<h2 id="King的拓展运用"><a href="#King的拓展运用" class="headerlink" title="King的拓展运用"></a>King的拓展运用</h2><p>目前已经有诸多与King相关的拓展研究成果和工程运用案例，例如Chris Chambers等人在King基础上提出一种分布式的网络坐标系统<a href="https://pdos.csail.mit.edu/papers/vivaldi:sigcomm/paper.pdf" target="_blank" rel="noopener">Vivaldi</a>，以及<a href="http://citeseerx.ist.psu.edu/viewdoc/download;jsessionid=5BD3EDDB8F0170F4C51E9C2C37A79BCE?doi=10.1.1.3.9108&rep=rep1&type=pdf" target="_blank" rel="noopener">一种在线游戏的网络重定向服务</a>，L. Garc´es-Erice等人则使用King提出一种以拓扑为中心的P2P网络查找服务<a href="http://www.ic.unicamp.br/~celio/peer2peer/miscelanea/topology-centric-look-up.pdf" target="_blank" rel="noopener">TOPLUS</a>等等。</p>
+<p>2015年，来自加州大学伯克利分校的Ryan Rasti在论文《Temporal Lensing and its Application in Pulsing Denial-of-Service Attacks》中提出了一种基于时间差排列数据包的脉冲型反射DDoS攻击技术——时间透镜，其中对网络延迟的测量采用了King。</p>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><p><a href="https://www.gribble.org/papers/king.pdf" target="_blank" rel="noopener">King: Estimating Latency between Arbitrary Internet End Hosts</a><br><a href="https://ieeexplore.ieee.org/abstract/document/4509610" target="_blank" rel="noopener">Turbo King: Framework for Large-Scale Internet Delay Measurements</a></p>
+<p><strong>* 转载请注明作者及来源</strong></p>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/about/">About</a></li>
+         
+          <li><a href="/archives/">Writing</a></li>
+         
+          <li><a href="/projects/">Projects</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#初识King"><span class="toc-number">1.</span> <span class="toc-text">初识King</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#King是如何工作的"><span class="toc-number">2.</span> <span class="toc-text">King是如何工作的</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#第一阶段，找到离一台主机最近的权威域名服务器。"><span class="toc-number">2.1.</span> <span class="toc-text">第一阶段，找到离一台主机最近的权威域名服务器。</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#第二阶段，使两台权威域名服务器之间进行查询，计算两台域名服务器间的网络延迟。"><span class="toc-number">2.2.</span> <span class="toc-text">第二阶段，使两台权威域名服务器之间进行查询，计算两台域名服务器间的网络延迟。</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#King的实际使用情况"><span class="toc-number">3.</span> <span class="toc-text">King的实际使用情况</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#King存在的问题"><span class="toc-number">4.</span> <span class="toc-text">King存在的问题</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#问题1：无法准确找到负责解析主机的权威域名服务器，以至于使结果准确性大打折扣"><span class="toc-number">4.1.</span> <span class="toc-text">问题1：无法准确找到负责解析主机的权威域名服务器，以至于使结果准确性大打折扣</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#问题2：负责解析主机的权威域名服务器有多台，导致测量结果不准确"><span class="toc-number">4.2.</span> <span class="toc-text">问题2：负责解析主机的权威域名服务器有多台，导致测量结果不准确</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#问题3：大量无用的缓存对主机权威域名服务器造成性能影响"><span class="toc-number">4.3.</span> <span class="toc-text">问题3：大量无用的缓存对主机权威域名服务器造成性能影响</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#问题4：权威域名服务器之前存在转发器，使得测量结果受到影响"><span class="toc-number">4.4.</span> <span class="toc-text">问题4：权威域名服务器之前存在转发器，使得测量结果受到影响</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#问题5：不能保证找到的服务器允许任意主机对其进行递归查询"><span class="toc-number">4.5.</span> <span class="toc-text">问题5：不能保证找到的服务器允许任意主机对其进行递归查询</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#第一阶段，找到离一台主机最近的递归域名服务器。"><span class="toc-number">4.6.</span> <span class="toc-text">第一阶段，找到离一台主机最近的递归域名服务器。</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#第二阶段，使两台域名服务器之间进行查询，计算两台域名服务器间的网络延迟。"><span class="toc-number">4.7.</span> <span class="toc-text">第二阶段，使两台域名服务器之间进行查询，计算两台域名服务器间的网络延迟。</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#King的拓展运用"><span class="toc-number">5.</span> <span class="toc-text">King的拓展运用</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#参考"><span class="toc-number">6.</span> <span class="toc-text">参考</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" href="http://www.facebook.com/sharer.php?u=https://0x0c.cc/2018/10/09/King：测量任意主机之间的网络延迟/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://twitter.com/share?url=https://0x0c.cc/2018/10/09/King：测量任意主机之间的网络延迟/&text=King：测量任意主机之间的网络延迟"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.linkedin.com/shareArticle?url=https://0x0c.cc/2018/10/09/King：测量任意主机之间的网络延迟/&title=King：测量任意主机之间的网络延迟"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://pinterest.com/pin/create/bookmarklet/?url=https://0x0c.cc/2018/10/09/King：测量任意主机之间的网络延迟/&is_video=false&description=King：测量任意主机之间的网络延迟"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=King：测量任意主机之间的网络延迟&body=Check out this article: https://0x0c.cc/2018/10/09/King：测量任意主机之间的网络延迟/"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://getpocket.com/save?url=https://0x0c.cc/2018/10/09/King：测量任意主机之间的网络延迟/&title=King：测量任意主机之间的网络延迟"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://reddit.com/submit?url=https://0x0c.cc/2018/10/09/King：测量任意主机之间的网络延迟/&title=King：测量任意主机之间的网络延迟"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.stumbleupon.com/submit?url=https://0x0c.cc/2018/10/09/King：测量任意主机之间的网络延迟/&title=King：测量任意主机之间的网络延迟"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://digg.com/submit?url=https://0x0c.cc/2018/10/09/King：测量任意主机之间的网络延迟/&title=King：测量任意主机之间的网络延迟"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.tumblr.com/share/link?url=https://0x0c.cc/2018/10/09/King：测量任意主机之间的网络延迟/&name=King：测量任意主机之间的网络延迟&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://news.ycombinator.com/submitlink?u=https://0x0c.cc/2018/10/09/King：测量任意主机之间的网络延迟/&t=King：测量任意主机之间的网络延迟"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fas fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fas fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fas fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy; 2019 S4kur4
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/about/">About</a></li>
+         
+          <li><a href="/archives/">Writing</a></li>
+         
+          <li><a href="/projects/">Projects</a></li>
+        
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+<link rel="stylesheet" href="/lib/justified-gallery/css/justifiedGallery.min.css">
+
+    <!-- jquery -->
+<script src="/lib/jquery/jquery.min.js"></script>
+<script src="/lib/justified-gallery/js/jquery.justifiedGallery.min.js"></script>
+<!-- clipboard -->
+
+  <script src="/lib/clipboard/clipboard.min.js"></script>
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="far fa-clone"></i>';
+    btn += '</span>'; 
+    // mount it!
+    $(".highlight .code pre").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      target: function(trigger) {
+        return trigger.nextElementSibling;
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+<script src="/js/main.js"></script>
+<!-- search -->
+
+<!-- Google Analytics -->
+
+<!-- Baidu Analytics -->
+
+<!-- Disqus Comments -->
+
+
+</body>
+</html>
