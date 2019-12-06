@@ -161,7 +161,7 @@
 <img src="https://i.loli.net/2018/07/31/5b5fc44a7658d.png" alt="1" style="zoom: 25%;">
 
 <h2 id="CLDAP-Reflection-DDoS现状"><a href="#CLDAP-Reflection-DDoS现状" class="headerlink" title="CLDAP Reflection DDoS现状"></a>CLDAP Reflection DDoS现状</h2><p>根据Akamai SIRT发布的<a href="https://www.akamai.com/us/en/about/our-thinking/threat-advisories/connection-less-lightweight-directory-access-protocol-reflection-ddos-threat-advisory.jsp" target="_blank" rel="noopener">报告</a>，目前捕获到的CLDAP DRDoS最高峰值流量为24Gbps，最大反射倍数为70倍。由于CLDAP未被广泛运用，开源LDAP软件openLDAP早已不再支持UDP协议的请求。事实上，现阶段进行CLDAP DRDoS攻击被利用最多的服务是Windows服务器的活动目录服务Active Directory（AD）。通常AD服务会在TCP端口389上监听来自客户端的LDAP操作请求，同时也会在UDP端口389上使用CLDAP协议来等待执行rootDSE的搜索操作（rootDSE条目在AD服务配置时创建，且允许未经身份验证的客户端对服务器的配置状态、功能和扩展属性进行查询，也被称作“AD ping”）。一些Windows服务器的AD服务监听端口暴露在公网，进而被利用来执行rootDSE查询产生放大反射DDoS攻击，在Exploit-DB上已经有安全研究者公开了<a href="https://www.exploit-db.com/exploits/40703/" target="_blank" rel="noopener">Perl利用脚本</a>：。使用Nmap的ldap-rootdse脚本也可以对该缺陷进行扫描确认：</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nmap -Pn -sSU -p 389,636 --script ldap-rootdse 123.123.123.123</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">nmap -Pn -sSU -p 389,636 --script ldap-rootdse 123.123.123.123</span><br></pre></td></tr></table></figure>
 
 <img src="https://i.loli.net/2018/07/31/5b5fc16ee8218.png" alt="1" style="zoom: 30%;">
 
@@ -191,7 +191,7 @@
 <img src="https://i.loli.net/2018/08/11/5b6e63839260e.png" alt="1" style="zoom: 40%;">
 
 <h2 id="影响面分析"><a href="#影响面分析" class="headerlink" title="影响面分析"></a>影响面分析</h2><p>我们在ZoomEye中通过搜索比较发现，存在缺陷的Windows服务器具有特定的banner信息：</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">0\x84\x00\x00\x00\x10\x02\x01\x01a\x84\x00\x00\x00\x07\n\x01\x00\x04\x00\x04\x00</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">0\x84\x00\x00\x00\x10\x02\x01\x01a\x84\x00\x00\x00\x07\n\x01\x00\x04\x00\x04\x00</span><br></pre></td></tr></table></figure>
 
 <p>结合编码中的每一个标志位来看，该banner信息与LDAP服务器bindResponse响应报文编码十分相似，因此推断出现该banner信息的原因，是由于ZoomEye扫描引擎在扫描到存在缺陷的LDAP服务器时服务器做出了一次绑定操作的响应，且告知客户端绑定成功，这也是在客户端searchRequest之前的必要操作：</p>
 <img src="https://i.loli.net/2018/07/31/5b60076bb1a4b.png" alt="1" style="zoom: 33%;">
