@@ -37,9 +37,7 @@
 <meta property="og:image" content="https://i.loli.net/2019/09/25/bk5RPxulzoMnfae.png">
 <meta property="og:image" content="https://i.loli.net/2019/09/25/CHyN6BJIKWZ7pE3.png">
 <meta property="og:image" content="https://i.loli.net/2019/09/25/nFj8RvPr31LckIs.png">
-<meta property="og:image" content="https://i.loli.net/2019/09/25/u2OqKD3ZRCeEGc8.png">
-<meta property="og:image" content="https://i.loli.net/2019/09/25/tUuSDByOP5H8b9p.png">
-<meta property="og:updated_time" content="2019-09-30T03:22:31.871Z">
+<meta property="og:updated_time" content="2020-03-13T07:19:57.668Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="内网横移之WinRM">
 <meta name="twitter:description" content="WS-Management协议及WinRMWeb服务管理协议（WS-Management，Web Services-Management）是一种基于SOAP协议的DMTF开放标准，用于对服务器等网络设备以及各种Web应用程序进行管理。而WinRM（Windows Remote Management）是Windows对WS-Management的实现，WinRM允许远程用户使用工具和脚本对Windo">
@@ -288,11 +286,6 @@
 <figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">HTTP/1.1 200</span><br><span class="line">Content-Type: multipart/encrypted;protocol=&quot;application/HTTP-SPNEGO-session-encrypted&quot;;boundary=&quot;Encrypted Boundary&quot;</span><br><span class="line">Server: Microsoft-HTTPAPI/2.0</span><br><span class="line">Date: Wed, 18 Sep 2019 05:37:57 GMT</span><br><span class="line">Content-Length: 2202</span><br><span class="line"></span><br><span class="line">--Encrypted Boundary</span><br><span class="line">Content-Type: application/HTTP-SPNEGO-session-encrypted</span><br><span class="line">OriginalContent: type=application/soap+xml;charset=UTF-16;Length=1946</span><br><span class="line">--Encrypted Boundary</span><br><span class="line">Content-Type: application/octet-stream</span><br><span class="line">.........t3.d.O...../....-....N7C..B....2.....r.</span><br><span class="line">.............................(此处省略)</span><br><span class="line">...DP.....@...A..e...Z....6.7...M.l|.PU...vA.J...7.T...--Encrypted Boundary--</span><br></pre></td></tr></table></figure>
 
 <p>经过测试，使用PowerShell Remoting、Evil-WinRM工具产生的WinRM连接流量均与之类似。可见在WinRM服务未开启监听HTTPS端口的情况下，Windows依然会加密WinRM会话以保证通信数据的完整性。不过，我们仍然可以通过HTTP请求与响应中的明文部分捕获WinRM认证及操作的行为，例如<code>Microsoft WinRM Client</code>、<code>Encrypted Boundary</code>、<code>HTTP-SPNEGO-session-encrypted</code>等关键字，并以此进行关联产生侦测到WinRM服务成功调用的预警。</p>
-<p>使用斗象智能安全PRS内置的HTTP协议监测模型和风险关联模型对WinRM服务远程登录执行进行预警：</p>
-<img src="https://i.loli.net/2019/09/25/u2OqKD3ZRCeEGc8.png" alt="19" style="zoom:50%;">
-
-<img src="https://i.loli.net/2019/09/25/tUuSDByOP5H8b9p.png" alt="20" style="zoom:60%;">
-
 <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>根据多个APT报告，借助Windows服务进行内网横向移动的技术受到越来越多攻击者的青睐，这将进一步打破攻防对抗的平衡，使得防御方举步维艰。本文从WS-Management协议出发，介绍了Windows中的WinRM服务，同时通过实例对该服务用于横向移动的过程进行了阐述和举例。最后，在Windows日志层面和流量层面分别探讨了检测WinRM横向移动的可能性。</p>
 <h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><p><a href="https://en.wikipedia.org/wiki/Windows_Remote_Management" target="_blank" rel="noopener">Windows Remote Management</a><br><a href="https://redcanary.com/blog/lateral-movement-winrm-wmi" target="_blank" rel="noopener">Lateral Movement Using WinRM and WMI</a><br><a href="https://www.bloggingforlogging.com/2018/01/24/demystifying-winrm" target="_blank" rel="noopener">Demystifying WinRM</a><br><a href="https://devops-collective-inc.gitbook.io/secrets-of-powershell-remoting/remoting-basics" target="_blank" rel="noopener">Secrets of PowerShell Remoting</a><br><a href="https://attack.mitre.org/techniques/T1028/" target="_blank" rel="noopener">Windows Remote Management(ATT&amp;CK)</a></p>
 <p><strong>* 转载请注明作者及来源</strong></p>
@@ -354,7 +347,7 @@
         
         <footer id="footer">
   <div class="footer-left">
-    Copyright &copy; 2019 S4kur4
+    Copyright &copy; 2020 S4kur4
   </div>
   <div class="footer-right">
     <nav>
