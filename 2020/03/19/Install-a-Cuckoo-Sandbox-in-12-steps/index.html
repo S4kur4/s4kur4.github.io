@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang=en>
+<head><meta name="generator" content="Hexo 3.9.0">
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="description" content="BackgroundRecently, I was participating in an online malicious file detection project. I used the Cuckoo sandbox as part of the project. However, during the installation of Cuckoo sandbox, I found tha">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Install a Cuckoo Sandbox in 12 steps">
+<meta property="og:url" content="https://0x0c.cc/2020/03/19/Install-a-Cuckoo-Sandbox-in-12-steps/index.html">
+<meta property="og:site_name" content="S4kur4">
+<meta property="og:description" content="BackgroundRecently, I was participating in an online malicious file detection project. I used the Cuckoo sandbox as part of the project. However, during the installation of Cuckoo sandbox, I found tha">
+<meta property="og:locale" content="en">
+<meta property="og:updated_time" content="2020-03-19T09:04:51.310Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Install a Cuckoo Sandbox in 12 steps">
+<meta name="twitter:description" content="BackgroundRecently, I was participating in an online malicious file detection project. I used the Cuckoo sandbox as part of the project. However, during the installation of Cuckoo sandbox, I found tha">
+    
+    
+        
+          
+              <link rel="shortcut icon" href="/images/favicon.ico">
+          
+        
+        
+          
+            <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+          
+        
+        
+          
+            <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+          
+        
+    
+    <!-- title -->
+    <title>Install a Cuckoo Sandbox in 12 steps</title>
+    <!-- styles -->
+    <link rel="stylesheet" href="/css/style.css">
+    <!-- persian styles -->
+    
+      <link rel="stylesheet" href="/css/rtl.css">
+    
+    <!-- rss -->
+    
+    
+</head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fas fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/about/">About</a></li>
+         
+          <li><a href="/archives/">Archives</a></li>
+         
+          <li><a href="/projects/">Projects</a></li>
+        
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        
+        <li><a class="icon" href="/2019/09/25/内网横移之WinRM/"><i class="fas fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" href="#"><i class="fas fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" href="http://www.facebook.com/sharer.php?u=https://0x0c.cc/2020/03/19/Install-a-Cuckoo-Sandbox-in-12-steps/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://twitter.com/share?url=https://0x0c.cc/2020/03/19/Install-a-Cuckoo-Sandbox-in-12-steps/&text=Install a Cuckoo Sandbox in 12 steps"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.linkedin.com/shareArticle?url=https://0x0c.cc/2020/03/19/Install-a-Cuckoo-Sandbox-in-12-steps/&title=Install a Cuckoo Sandbox in 12 steps"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://pinterest.com/pin/create/bookmarklet/?url=https://0x0c.cc/2020/03/19/Install-a-Cuckoo-Sandbox-in-12-steps/&is_video=false&description=Install a Cuckoo Sandbox in 12 steps"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Install a Cuckoo Sandbox in 12 steps&body=Check out this article: https://0x0c.cc/2020/03/19/Install-a-Cuckoo-Sandbox-in-12-steps/"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://getpocket.com/save?url=https://0x0c.cc/2020/03/19/Install-a-Cuckoo-Sandbox-in-12-steps/&title=Install a Cuckoo Sandbox in 12 steps"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://reddit.com/submit?url=https://0x0c.cc/2020/03/19/Install-a-Cuckoo-Sandbox-in-12-steps/&title=Install a Cuckoo Sandbox in 12 steps"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.stumbleupon.com/submit?url=https://0x0c.cc/2020/03/19/Install-a-Cuckoo-Sandbox-in-12-steps/&title=Install a Cuckoo Sandbox in 12 steps"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://digg.com/submit?url=https://0x0c.cc/2020/03/19/Install-a-Cuckoo-Sandbox-in-12-steps/&title=Install a Cuckoo Sandbox in 12 steps"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.tumblr.com/share/link?url=https://0x0c.cc/2020/03/19/Install-a-Cuckoo-Sandbox-in-12-steps/&name=Install a Cuckoo Sandbox in 12 steps&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://news.ycombinator.com/submitlink?u=https://0x0c.cc/2020/03/19/Install-a-Cuckoo-Sandbox-in-12-steps/&t=Install a Cuckoo Sandbox in 12 steps"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Background"><span class="toc-number">1.</span> <span class="toc-text">Background</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Preparatory-works"><span class="toc-number">2.</span> <span class="toc-text">Preparatory works</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Start-installation"><span class="toc-number">3.</span> <span class="toc-text">Start installation</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Automation"><span class="toc-number">4.</span> <span class="toc-text">Automation</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4">
+        
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        Install a Cuckoo Sandbox in 12 steps
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">S4kur4</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2020-03-19T06:04:36.000Z" itemprop="datePublished">2020-03-19</time>
+        
+      
+    </div>
+
+
+      
+
+      
+
+    </div>
+  </header>
+  
+
+  <div class="content" itemprop="articleBody">
+    <h2 id="Background"><a href="#Background" class="headerlink" title="Background"></a>Background</h2><p>Recently, I was participating in an online malicious file detection project. I used the Cuckoo sandbox as part of the project. However, during the installation of Cuckoo sandbox, I found that the process is very tedious and unfriendly for the automatic deployment of engineering projects. Also, by searching the Internet, I didn’t find some references that can quickly improve the installation steps. Therefore, I decided to open source the method summarized during this period to help researchers who are also interested in Cuckoo.</p>
+<h2 id="Preparatory-works"><a href="#Preparatory-works" class="headerlink" title="Preparatory works"></a>Preparatory works</h2><p>Before installing Cuckoo, we need to prepare a Cuckoo Agent, which is a Windows virtual machine based on VitualBox. Of course, you needn’t remake it, just use this ova file I prepared:<a href></a></p>
+<p>It is noteworthy that I completed the installation on version of Ubuntu <code>18.04.3</code> Desktop, the Cuckoo sandbox is the latest version <code>2.0.7</code>. If everything goes well, the following method should also support version of Ubuntu Server.</p>
+<h2 id="Start-installation"><a href="#Start-installation" class="headerlink" title="Start installation"></a>Start installation</h2><p><strong>step 1:</strong> Install system updates and update system dependencies after installing Ubuntu</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo apt-get update &amp;&amp; sudo apt-get upgrade</span><br></pre></td></tr></table></figure>
+
+<p><strong>step 2:</strong> Install basic system dependencies by Cuckoo required (if iptables-persistent configuration GUI window pops up, keep the default selection and go on)</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo apt-get install -y vim curl net-tools htop python python-pip python-dev libffi-dev libssl-dev python-virtualenv python-setuptools python-magic python-libvirt ssdeep libjpeg-dev zlib1g-dev swig mongodb postgresql libpq-dev build-essential git libpcre3 libpcre3-dev libpcre++-dev libfuzzy-dev automake make libtool gcc tcpdump dh-autoreconf flex bison libjansson-dev libmagic-dev virtualbox libyaml-dev libpython2.7-dev tcpdump apparmor-utils iptables-persistent</span><br></pre></td></tr></table></figure>
+
+<p><strong>step 3:</strong> Install Python dependencies</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo pip install -U sqlalchemy==1.3.3 dpkt==1.8.7 jinja2==2.9.6 pymongo==3.0.3 bottle pefile yara-python==3.6.3 requests==2.13.0 python-dateutil==2.4.2 chardet==2.3.0 setuptools psycopg2 pycrypto pydeep distorm3 cuckoo weasyprint==0.36 m2crypto openpyxl ujson pycrypto pytz pyOpenSSL</span><br></pre></td></tr></table></figure>
+
+<p><strong>step 4:</strong> Uninstall Werkzeug and reinstall (Werkzeug has a <a href="https://stackoverflow.com/questions/60131900/weird-is-xhr-error-when-deploying-flask-app-to-heroku" target="_blank" rel="noopener">version update</a> which leads to incompatibility with Cuckoo 2.0.7)</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo pip uninstall werkzeug &amp;&amp; sudo pip install werkzeug==0.16.1</span><br></pre></td></tr></table></figure>
+
+<p><strong>step 5:</strong> Install pySSDeep, yara and volatility</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">git clone https://github.com/bunzen/pySSDeep.git &amp;&amp; cd pySSDeep &amp;&amp; sudo python setup.py build &amp;&amp; sudo python setup.py install</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">wget https://github.com/VirusTotal/yara/archive/v3.7.1.tar.gz &amp;&amp; tar -xzvf v3.7.1.tar.gz &amp;&amp; cd yara-3.7.1 &amp;&amp; sudo ./bootstrap.sh &amp;&amp; sudo ./configure --with-crypto --enable-cuckoo --enable-magic &amp;&amp; sudo make &amp;&amp; sudo make install</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">git clone https://github.com/volatilityfoundation/volatility.git &amp;&amp; cd volatility &amp;&amp; sudo python setup.py build &amp;&amp; sudo python setup.py install</span><br></pre></td></tr></table></figure>
+
+<p><strong>step 6:</strong> Configure tcpdump</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo aa-disable /usr/sbin/tcpdump &amp;&amp; sudo setcap cap_net_raw,cap_net_admin=eip /usr/sbin/tcpdump</span><br></pre></td></tr></table></figure>
+
+<p><strong>step 7:</strong> Start MongoDB service and initialize Cuckoo, pull community signatures</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo service mongodb start &amp;&amp; cuckoo &amp;&amp; cuckoo community</span><br></pre></td></tr></table></figure>
+
+<p><strong>step 8:</strong> Use VboxManage to create a hostonly ethernet adapter <code>vboxnet0</code>, and modify the default storage directory and permission for virtual machine files</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">vboxmanage hostonlyif create &amp;&amp; vboxmanage hostonlyif ipconfig vboxnet0 --ip 192.168.56.1 --netmask 255.255.255.0</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo mkdir /data &amp;&amp; sudo mkdir /data/VirtualBoxVms &amp;&amp; sudo chmod 777 /data/VirtualBoxVms</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">vboxmanage setproperty machinefolder /data/VirtualBoxVms</span><br></pre></td></tr></table></figure>
+
+<p><strong>step 9:</strong> Import <code>Agent.ova</code>, boot up to take a snapshot, and add to Cuckoo</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">vboxmanage import ~/Downloads/Agent.ova &amp;&amp; vboxmanage startvm "cuckoo" &amp;&amp; sleep 1m</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">vboxmanage snapshot "cuckoo" take "snap1" &amp;&amp; vboxmanage controlvm "cuckoo" poweroff</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cuckoo machine --delete cuckoo1 &amp;&amp; cuckoo machine --add cuckoo 192.168.56.101 --platform windows --snapshot snap1</span><br></pre></td></tr></table></figure>
+
+<p><strong>step 10:</strong> Configure iptables to enable IP forwarding</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo iptables -A FORWARD -i vboxnet0 -s 192.168.56.0/24 -m conntrack --ctstate NEW -j ACCEPT &amp;&amp; sudo iptables -A FORWARD -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT &amp;&amp; sudo iptables -A POSTROUTING -t nat -j MASQUERADE</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo vim /etc/sysctl.conf        # Open net.ipv4.ip_forward = 1</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo sysctl -p /etc/sysctl.conf &amp;&amp; sudo netfilter-persistent save</span><br></pre></td></tr></table></figure>
+
+<p><strong>step 11:</strong> Modify the Cuckoo configuration file, open MongoDB and VirusTotal</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">vim ~/.cuckoo/conf/reporting.conf        # Change mongodb status from off to on</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">vim ~/.cuckoo/conf/processing.conf       # Change virustotal status from off to on</span><br></pre></td></tr></table></figure>
+
+<p><strong>step 12:</strong> Run Cuckoo</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cuckoo</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cuckoo web -H 0.0.0.0 -p 8000</span><br></pre></td></tr></table></figure>
+
+<p>Thus far, We have successfully installed a Cuckoo sandbox. We can submit sample files to Cuckoo through web service on port <code>8000</code>.</p>
+<h2 id="Automation"><a href="#Automation" class="headerlink" title="Automation"></a>Automation</h2><p>Finally, I wrote the above process into a shell script to automate the installation of Cuckoo sandbox. Perhaps it’s the best script to install Cuckoo today?</p>
+<p>The code is here: <a href="https://github.com/S4kur4/AutoDeployCuckoo" target="_blank" rel="noopener">AutoDeployCuckoo</a></p>
+<p><strong>* Reproduced this article please indicate the original source and author</strong></p>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/about/">About</a></li>
+         
+          <li><a href="/archives/">Archives</a></li>
+         
+          <li><a href="/projects/">Projects</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Background"><span class="toc-number">1.</span> <span class="toc-text">Background</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Preparatory-works"><span class="toc-number">2.</span> <span class="toc-text">Preparatory works</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Start-installation"><span class="toc-number">3.</span> <span class="toc-text">Start installation</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Automation"><span class="toc-number">4.</span> <span class="toc-text">Automation</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" href="http://www.facebook.com/sharer.php?u=https://0x0c.cc/2020/03/19/Install-a-Cuckoo-Sandbox-in-12-steps/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://twitter.com/share?url=https://0x0c.cc/2020/03/19/Install-a-Cuckoo-Sandbox-in-12-steps/&text=Install a Cuckoo Sandbox in 12 steps"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.linkedin.com/shareArticle?url=https://0x0c.cc/2020/03/19/Install-a-Cuckoo-Sandbox-in-12-steps/&title=Install a Cuckoo Sandbox in 12 steps"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://pinterest.com/pin/create/bookmarklet/?url=https://0x0c.cc/2020/03/19/Install-a-Cuckoo-Sandbox-in-12-steps/&is_video=false&description=Install a Cuckoo Sandbox in 12 steps"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Install a Cuckoo Sandbox in 12 steps&body=Check out this article: https://0x0c.cc/2020/03/19/Install-a-Cuckoo-Sandbox-in-12-steps/"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://getpocket.com/save?url=https://0x0c.cc/2020/03/19/Install-a-Cuckoo-Sandbox-in-12-steps/&title=Install a Cuckoo Sandbox in 12 steps"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://reddit.com/submit?url=https://0x0c.cc/2020/03/19/Install-a-Cuckoo-Sandbox-in-12-steps/&title=Install a Cuckoo Sandbox in 12 steps"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.stumbleupon.com/submit?url=https://0x0c.cc/2020/03/19/Install-a-Cuckoo-Sandbox-in-12-steps/&title=Install a Cuckoo Sandbox in 12 steps"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://digg.com/submit?url=https://0x0c.cc/2020/03/19/Install-a-Cuckoo-Sandbox-in-12-steps/&title=Install a Cuckoo Sandbox in 12 steps"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.tumblr.com/share/link?url=https://0x0c.cc/2020/03/19/Install-a-Cuckoo-Sandbox-in-12-steps/&name=Install a Cuckoo Sandbox in 12 steps&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://news.ycombinator.com/submitlink?u=https://0x0c.cc/2020/03/19/Install-a-Cuckoo-Sandbox-in-12-steps/&t=Install a Cuckoo Sandbox in 12 steps"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fas fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fas fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fas fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy; 2020 S4kur4
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/about/">About</a></li>
+         
+          <li><a href="/archives/">Archives</a></li>
+         
+          <li><a href="/projects/">Projects</a></li>
+        
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+<link rel="stylesheet" href="/lib/justified-gallery/css/justifiedGallery.min.css">
+
+    <!-- jquery -->
+<script src="/lib/jquery/jquery.min.js"></script>
+<script src="/lib/justified-gallery/js/jquery.justifiedGallery.min.js"></script>
+<!-- clipboard -->
+
+  <script src="/lib/clipboard/clipboard.min.js"></script>
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="far fa-clone"></i>';
+    btn += '</span>'; 
+    // mount it!
+    $(".highlight .code pre").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      target: function(trigger) {
+        return trigger.nextElementSibling;
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+<script src="/js/main.js"></script>
+<!-- search -->
+
+<!-- Google Analytics -->
+
+    <script type="text/javascript">
+        (function(i,s,o,g,r,a,m) {i['GoogleAnalyticsObject']=r;i[r]=i[r]||function() {
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+        ga('create', 'UA-129302442-1', 'auto');
+        ga('send', 'pageview');
+    </script>
+
+<!-- Baidu Analytics -->
+
+<!-- Disqus Comments -->
+
+
+</body>
+</html>
