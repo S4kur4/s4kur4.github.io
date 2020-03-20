@@ -6,17 +6,17 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="HandheldFriendly" content="True">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <meta name="description" content="BackgroundRecently, I was participating in an online malicious file detection project and we used the Cuckoo sandbox as part of it. During the installation of Cuckoo sandbox, I found that the process">
+    <meta name="description" content="BackgroundRecently, I was participating in an online malicious file detection project, and we used the Cuckoo sandbox as part of it. During the installation of Cuckoo sandbox, I found the process is v">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Install a Cuckoo Sandbox in 12 steps">
 <meta property="og:url" content="https://0x0c.cc/2020/03/19/Install-a-Cuckoo-Sandbox-in-12-steps/index.html">
 <meta property="og:site_name" content="S4kur4">
-<meta property="og:description" content="BackgroundRecently, I was participating in an online malicious file detection project and we used the Cuckoo sandbox as part of it. During the installation of Cuckoo sandbox, I found that the process">
+<meta property="og:description" content="BackgroundRecently, I was participating in an online malicious file detection project, and we used the Cuckoo sandbox as part of it. During the installation of Cuckoo sandbox, I found the process is v">
 <meta property="og:locale" content="en">
-<meta property="og:updated_time" content="2020-03-20T06:45:09.681Z">
+<meta property="og:updated_time" content="2020-03-20T06:57:35.088Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Install a Cuckoo Sandbox in 12 steps">
-<meta name="twitter:description" content="BackgroundRecently, I was participating in an online malicious file detection project and we used the Cuckoo sandbox as part of it. During the installation of Cuckoo sandbox, I found that the process">
+<meta name="twitter:description" content="BackgroundRecently, I was participating in an online malicious file detection project, and we used the Cuckoo sandbox as part of it. During the installation of Cuckoo sandbox, I found the process is v">
     
     
         
@@ -140,7 +140,7 @@
   
 
   <div class="content" itemprop="articleBody">
-    <h2 id="Background"><a href="#Background" class="headerlink" title="Background"></a>Background</h2><p>Recently, I was participating in an online malicious file detection project and we used the Cuckoo sandbox as part of it. During the installation of Cuckoo sandbox, I found that the process is very tedious and unfriendly for the automatic deployment of engineering projects. Also, by searching the Internet, I didn’t find some references that can quickly improve the deployment steps. Therefore, I decided to open source the method summarized during this period to help researchers who are also interested in Cuckoo.</p>
+    <h2 id="Background"><a href="#Background" class="headerlink" title="Background"></a>Background</h2><p>Recently, I was participating in an online malicious file detection project, and we used the Cuckoo sandbox as part of it. During the installation of Cuckoo sandbox, I found the process is very tedious and unfriendly for automatic deployment of engineering projects. Also, by searching the Internet, I didn’t find any useful references can quickly improve the deployment steps. After some practice, I have summarized a relatively simple method that can deploy a Cuckoo sandbox in 12 steps. Today, I decided to make it public.</p>
 <h2 id="Preparatory-works"><a href="#Preparatory-works" class="headerlink" title="Preparatory works"></a>Preparatory works</h2><p>Before installing Cuckoo, we need to prepare a Cuckoo Agent, which is a Windows virtual machine based on VitualBox. Of course, you needn’t remake it, just use this ova file I have prepared:<a href="https://csedurs-my.sharepoint.com/:u:/g/personal/s4kur4_casc_ren/EZqKiQg-pu9Lr5EioAnNqPUBgGB0Ohl6ogOZIclQ2cAtjg?e=v61KA3" target="_blank" rel="noopener">Agent.ova</a></p>
 <p>It is noteworthy that I completed the installation on version of Ubuntu <code>18.04.3</code> Desktop, the Cuckoo sandbox is the latest version <code>2.0.7</code>. If everything goes well, the following method should also support version of Ubuntu Server.</p>
 <h2 id="Start-installation"><a href="#Start-installation" class="headerlink" title="Start installation"></a>Start installation</h2><p><strong>step 1:</strong> Install system updates and update system dependencies after installing Ubuntu</p>
