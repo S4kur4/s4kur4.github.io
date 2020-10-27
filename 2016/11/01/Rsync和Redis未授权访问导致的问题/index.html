@@ -13,7 +13,7 @@
 <meta property="og:site_name" content="s4kur4">
 <meta property="og:description" content="Rsync未授权访问Rsync，即Remote synchronize远程同步。通常运行在873端口，它是一款用来实现远程同步功能的免费软件，在同步文件的同时，可以保持原来文件的权限、时间、软硬链接等附加信息。 Rsync使用算法提供了一个客户机和远程文件服务器的文件同步的快速方法，并且可以通过ssh隧道的方式来传输文件。Rsync配置不当可造成未授权直接访问，漏洞具体表现为，当我们向某个Rsyn">
 <meta property="og:locale" content="en">
-<meta property="og:updated_time" content="2020-10-27T05:42:30.831Z">
+<meta property="og:updated_time" content="2020-10-27T05:46:07.870Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Rsync和Redis未授权访问导致的问题">
 <meta name="twitter:description" content="Rsync未授权访问Rsync，即Remote synchronize远程同步。通常运行在873端口，它是一款用来实现远程同步功能的免费软件，在同步文件的同时，可以保持原来文件的权限、时间、软硬链接等附加信息。 Rsync使用算法提供了一个客户机和远程文件服务器的文件同步的快速方法，并且可以通过ssh隧道的方式来传输文件。Rsync配置不当可造成未授权直接访问，漏洞具体表现为，当我们向某个Rsyn">
@@ -141,7 +141,7 @@
 
   <div class="content" itemprop="articleBody">
     <h2 id="Rsync未授权访问"><a href="#Rsync未授权访问" class="headerlink" title="Rsync未授权访问"></a>Rsync未授权访问</h2><p>Rsync，即Remote synchronize远程同步。通常运行在873端口，它是一款用来实现远程同步功能的免费软件，在同步文件的同时，可以保持原来文件的权限、时间、软硬链接等附加信息。 Rsync使用算法提供了一个客户机和远程文件服务器的文件同步的快速方法，并且可以通过ssh隧道的方式来传输文件。Rsync配置不当可造成未授权直接访问，漏洞具体表现为，当我们向某个Rsync服务器发送命令<code>rsync xx.xx.xx.xx::</code>时服务器会罗列出允许进行远程同步操作的文件目录。Rsync简单的一些命令有：</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">rsync xx.xx.xx.xx:: #罗列出模块</span><br><span class="line">rsync xx.xx.xx.xx::模块名 #进入模块</span><br><span class="line">rsync -a xx.xx.xx.xx::模块名 #完整列出某个模块中的文件</span><br><span class="line">rsync xx.xx.xx.xx::模块路径/文件  本地路径/文件  #将模块中某个文件下载至本地</span><br><span class="line">rsync 本地路径/文件 root@xx.xx.xx.xx::模块路径/文件 #将本地文件上传到同步目录中&lt;/code&gt;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">rsync xx.xx.xx.xx:: # 罗列出模块</span><br><span class="line">rsync xx.xx.xx.xx::&lt;模块名&gt; # 进入模块</span><br><span class="line">rsync -a xx.xx.xx.xx::&lt;模块名&gt; # 完整列出某个模块中的文件</span><br><span class="line">rsync xx.xx.xx.xx::&lt;模块路径/文件&gt;  &lt;本地路径/文件&gt;  # 将模块中某个文件下载至本地</span><br><span class="line">rsync &lt;本地路径/文件&gt; root@xx.xx.xx.xx::&lt;模块路径/文件&gt; # 将本地文件上传到同步目录中</span><br></pre></td></tr></table></figure>
 
 <p>可以看出如果服务器的web目录可以同步的话可以直接上传一个webshell，甚至于当服务器的任务计划目录允许远程同步时可以直接反弹得到一个shell。瞌睡龙对Rsync的安全配置做了整理：<a href="http://drops.wooyun.org/papers/161" target="_blank" rel="noopener">http://drops.wooyun.org/papers/161</a> 乌云上也有利用Rsync进行反弹shell的经典案例：<a href="http://wooyun.org/bugs/wooyun-2010-034232" target="_blank" rel="noopener">http://wooyun.org/bugs/wooyun-2010-034232</a></p>
 <h2 id="Redis未授权访问"><a href="#Redis未授权访问" class="headerlink" title="Redis未授权访问"></a>Redis未授权访问</h2><p>Redis也存在未授权访问的问题。Redis默认情况下会绑定在6379端口，在没有开启认证的条件下，可以导致任意用户未授权访问Redis数据库。服务器为Windows时，利用Redis的一些方法向服务器web目录写入文件，从而可以得到一个webshell，不过在这之前必须要知道web的绝对路径。这篇文章中给出了可参考的方法：<a href="http://www.secpulse.com/archives/5357.html" target="_blank" rel="noopener">http://www.secpulse.com/archives/5357.html</a>，下面主要说说Linux，Linux当中有两种非常好的利用方式：</p>
