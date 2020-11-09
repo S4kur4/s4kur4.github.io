@@ -6,12 +6,12 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="HandheldFriendly" content="True">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <meta name="description" content="初识KingKing由来自华盛顿大学的Krishna P. Gummadi于2002年提出，源代码在这里，也可以在这里查看该研究的论文成果和详细介绍。King的核心思路是将测量任意两台主机间的网络延迟转化为测量两台DNS服务器之间的网络延迟，得到一个较精确的近似值。通过实验与实际情况下的值对比，这个测量值基本与实际的网络延迟值相差无几，准确率非常高。可以用下面的图来描述一下King的脑洞：   K">
+    <meta name="description" content="初识KingKing由来自华盛顿大学的Krishna P. Gummadi于2002年提出，源代码在这里，也可以在这里查看该研究的论文成果和详细介绍。King的核心思路是将测量任意两台主机间的网络延迟转化为测量两台DNS服务器之间的网络延迟，得到一个较精确的近似值。通过实验与实际情况下的值对比，这个测量值基本与实际的网络延迟值相差无几，准确率非常高。可以用下面的图来描述King的脑洞：   Kin">
 <meta property="og:type" content="article">
 <meta property="og:title" content="King：测量任意主机之间的网络延迟">
 <meta property="og:url" content="https://0x0c.cc/2018/10/09/King：测量任意主机之间的网络延迟/index.html">
 <meta property="og:site_name" content="s4kur4">
-<meta property="og:description" content="初识KingKing由来自华盛顿大学的Krishna P. Gummadi于2002年提出，源代码在这里，也可以在这里查看该研究的论文成果和详细介绍。King的核心思路是将测量任意两台主机间的网络延迟转化为测量两台DNS服务器之间的网络延迟，得到一个较精确的近似值。通过实验与实际情况下的值对比，这个测量值基本与实际的网络延迟值相差无几，准确率非常高。可以用下面的图来描述一下King的脑洞：   K">
+<meta property="og:description" content="初识KingKing由来自华盛顿大学的Krishna P. Gummadi于2002年提出，源代码在这里，也可以在这里查看该研究的论文成果和详细介绍。King的核心思路是将测量任意两台主机间的网络延迟转化为测量两台DNS服务器之间的网络延迟，得到一个较精确的近似值。通过实验与实际情况下的值对比，这个测量值基本与实际的网络延迟值相差无几，准确率非常高。可以用下面的图来描述King的脑洞：   Kin">
 <meta property="og:locale" content="en">
 <meta property="og:image" content="https://i.imgur.com/GQfqGlC.png">
 <meta property="og:image" content="https://i.imgur.com/h9Lv8I2.png">
@@ -22,10 +22,10 @@
 <meta property="og:image" content="https://i.imgur.com/MEM6qUf.png">
 <meta property="og:image" content="https://i.imgur.com/wq6scIQ.png">
 <meta property="og:image" content="https://i.imgur.com/Jms4Sw9.png">
-<meta property="og:updated_time" content="2019-12-14T01:36:53.954Z">
+<meta property="og:updated_time" content="2020-11-09T01:52:48.078Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="King：测量任意主机之间的网络延迟">
-<meta name="twitter:description" content="初识KingKing由来自华盛顿大学的Krishna P. Gummadi于2002年提出，源代码在这里，也可以在这里查看该研究的论文成果和详细介绍。King的核心思路是将测量任意两台主机间的网络延迟转化为测量两台DNS服务器之间的网络延迟，得到一个较精确的近似值。通过实验与实际情况下的值对比，这个测量值基本与实际的网络延迟值相差无几，准确率非常高。可以用下面的图来描述一下King的脑洞：   K">
+<meta name="twitter:description" content="初识KingKing由来自华盛顿大学的Krishna P. Gummadi于2002年提出，源代码在这里，也可以在这里查看该研究的论文成果和详细介绍。King的核心思路是将测量任意两台主机间的网络延迟转化为测量两台DNS服务器之间的网络延迟，得到一个较精确的近似值。通过实验与实际情况下的值对比，这个测量值基本与实际的网络延迟值相差无几，准确率非常高。可以用下面的图来描述King的脑洞：   Kin">
 <meta name="twitter:image" content="https://i.imgur.com/GQfqGlC.png">
     
     
@@ -152,7 +152,7 @@
   
 
   <div class="content" itemprop="articleBody">
-    <h2 id="初识King"><a href="#初识King" class="headerlink" title="初识King"></a>初识King</h2><p>King由来自华盛顿大学的Krishna P. Gummadi于2002年提出，源代码在<a href="https://people.mpi-sws.org/~gummadi/king/king.tar.gz" target="_blank" rel="noopener">这里</a>，也可以在<a href="https://people.mpi-sws.org/~gummadi/king/" target="_blank" rel="noopener">这里</a>查看该研究的论文成果和详细介绍。King的核心思路是将测量任意两台主机间的网络延迟转化为测量两台DNS服务器之间的网络延迟，得到一个较精确的近似值。通过实验与实际情况下的值对比，这个测量值基本与实际的网络延迟值相差无几，准确率非常高。可以用下面的图来描述一下King的脑洞：</p>
+    <h2 id="初识King"><a href="#初识King" class="headerlink" title="初识King"></a>初识King</h2><p>King由来自华盛顿大学的Krishna P. Gummadi于2002年提出，源代码在<a href="https://people.mpi-sws.org/~gummadi/king/king.tar.gz" target="_blank" rel="noopener">这里</a>，也可以在<a href="https://people.mpi-sws.org/~gummadi/king/" target="_blank" rel="noopener">这里</a>查看该研究的论文成果和详细介绍。King的核心思路是将测量任意两台主机间的网络延迟转化为测量两台DNS服务器之间的网络延迟，得到一个较精确的近似值。通过实验与实际情况下的值对比，这个测量值基本与实际的网络延迟值相差无几，准确率非常高。可以用下面的图来描述King的脑洞：</p>
 <img src="https://i.imgur.com/GQfqGlC.png" alt="1" style="zoom: 25%;">
 
 <h2 id="King是如何工作的"><a href="#King是如何工作的" class="headerlink" title="King是如何工作的"></a>King是如何工作的</h2><p>King的主要工作有两个阶段：第一阶段是找到被测算主机附近离它们最近的DNS服务器（一般是权威域名服务器）；第二阶段，使两台DNS服务器之间进行查询计算出网络延迟。</p>
@@ -163,11 +163,11 @@
 
 <p>此时King会通过比较每个权威域名服务器的域名和IP做出合理选择，在上面的例子中King会选择IP为192.1.2.3的权威域名服务器ns.tcc.tophant.com作为测算服务器。</p>
 <p><strong>第二阶段，使两台权威域名服务器之间进行查询，计算两台域名服务器间的网络延迟。</strong></p>
-<p>现假设我们将以第三方客户端C的身份测量主机A与B之间的网络延迟，通过第一阶段的工作，我们已经找到了分别位于A附近和B附近的两台DNS服务器NS_A、NS_B，它们分别负责a.com和b.com的权威域名解析。其中，L为A与B之间的网络延迟，L’为NS_A与NS_B之间的网络延迟，并且L≈L’。L1和L2分别为C与NS_A、NS_B间的网络延迟。</p>
+<p>现假设我们将以第三方客户端C的身份测量主机A与B之间的网络延迟，通过第一阶段的工作，已经找到了分别位于A附近和B附近的两台DNS服务器NS_A、NS_B，它们分别负责a.com和b.com的权威域名解析。其中，L为A与B之间的网络延迟，L’为NS_A与NS_B之间的网络延迟，并且L≈L’。L1和L2分别为C与NS_A、NS_B间的网络延迟。</p>
 <img src="https://i.imgur.com/eX2SG9R.png" alt="1" style="zoom: 50%;">
 
 <p>现阶段的目标，是要得到L’的值，那如何计算出L’呢？</p>
-<p>我们可以做如下操作：</p>
+<p>可以做如下操作：</p>
 <figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">1. 以C向NS_A发起一次递归DNS查询请求，令其解析一个b.com的随机子域名fh9fvnyro802sv.b.com。</span><br><span class="line">2. 由于NS_B负责对b.com进行权威解析，因此NS_A会将此次请求递归转发至NS_B。</span><br><span class="line">3. NS_B收到请求后无法解析出fh9fvnyro802sv.b.com，向NS_A反馈NXDOMAIN消息。</span><br><span class="line">4. NS_A向C转发NXDOMAIN。</span><br></pre></td></tr></table></figure>
 
 <p>图示如下：</p>
@@ -178,12 +178,12 @@
 <h2 id="King的实际使用情况"><a href="#King的实际使用情况" class="headerlink" title="King的实际使用情况"></a>King的实际使用情况</h2><p>King在源码中将测量过程分为4步：</p>
 <figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">STAGE1： 构造逆向解析域查找两台主机附近的DNS服务器，它们须能接收任意主机的递归查询请求</span><br><span class="line">STAGE2： 再次检查这两批DNS服务器，确定测量的方向(L1+L&apos;或者L2+L&apos;)</span><br><span class="line">STAGE3： 从两批DNS服务器列表里根据IP段匹配的情况找到最优的两个</span><br><span class="line">STAGE4： 开始构造DNS请求并计算出延迟</span><br></pre></td></tr></table></figure>
 
-<p>我们在CentOS7上编译了King的源码，并挑选一些IP进行实际测试：</p>
+<p>在CentOS7上编译King的源码，并挑选一些IP进行实际测试：</p>
 <img src="https://i.imgur.com/Dx57Qua.png" alt="1" style="zoom: 35%;">
 
 <img src="https://i.imgur.com/cQLneQi.png" alt="1" style="zoom: 35%;">
 
-<p>经过一番测试，可以发现King在实际使用过程中效果不尽人意，程序运行在STAGE1阶段基本就会发生错误而退出。</p>
+<p>经过一番测试，发现King在实际使用过程中效果不尽人意，程序运行在STAGE1阶段基本就会发生错误而退出。</p>
 <h2 id="King存在的问题"><a href="#King存在的问题" class="headerlink" title="King存在的问题"></a>King存在的问题</h2><p>虽然King从理论上证明了方法的可行性，但却避免不了其本身存在的问题。而这些问题也间接说明网络延迟测量的工程应用是极其困难的。经过实际测试并查询资料，King还存在以下几个问题，同时也衍生出了一些改进的方法：</p>
 <p><strong>问题1：无法准确找到负责解析主机的权威域名服务器，以至于使结果准确性大打折扣</strong></p>
 <p>如果某个主机使用了类似于阿里云的DNS云解析产品，权威域名服务器默认由阿里云提供，其与主机之间的距离无法确定。</p>

