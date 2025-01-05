@@ -28,7 +28,7 @@
 &lt;p&gt;关于哥斯拉的功能，通过&lt;a href=&quot;https:&#x2F;&#x2F;www.freebuf.com&#x2F;sectool&#x2F;247104.html&quot;&gt;《攻防礼盒：哥斯拉Godzilla Shell管理工具》&lt;&#x2F;a&gt;这篇文章可以有比较全面的了解。@nercis在&lt;a href=&quot;https:&#x2F;&#x2F;www.freebuf.com&#x2F;sectool&#x2F;252840.html&quot;&gt;《哥斯拉Godzilla运行原理探寻》&lt;&#x2F;a&gt;一文中通过生成的jsp版shell和客户端jar包向大家介绍了其运行原理。&lt;&#x2F;p&gt;
 &lt;p&gt;由于哥斯拉在处理jsp和php时加密方式存在差异，本文将从php版的shell展开，对其运行原理再做一下总结和阐述。&lt;&#x2F;p&gt;
 &lt;p&gt;先生成一个php静态shell，加密器选择&lt;code&gt;PHP_XOR_BASE64&lt;&#x2F;code&gt;。&lt;&#x2F;p&gt;
-&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;vkceyugu.cdn.bspapp.com&#x2F;VKCEYUGU-imgbed&#x2F;dddbf557-93bb-482b-8c64-9a8a7035f92d.png&quot; width=&quot;50%&quot;&gt;&lt;&#x2F;img&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;&#x2F;images&#x2F;2020-12-05&#x2F;1.png&quot; width=&quot;50%&quot;&gt;&lt;&#x2F;img&gt;&lt;&#x2F;p&gt;
 &lt;p&gt;生成的shell代码如下：&lt;&#x2F;p&gt;
 &lt;pre style=&quot;background-color:#fafafa;color:#61676c;&quot;&gt;&lt;code&gt;&lt;span&gt;&amp;lt;?php
 &lt;&#x2F;span&gt;&lt;span&gt;    session_start();
@@ -72,17 +72,17 @@
 &lt;strong&gt;结果 -&amp;gt; E函数进行异或加密 -&amp;gt; Base64编码&lt;&#x2F;strong&gt;
 &lt;strong&gt;md5($P.$T)后16位&lt;&#x2F;strong&gt;&lt;&#x2F;p&gt;
 &lt;p&gt;另外，根据&lt;code&gt;$_SESSION[$V]=$F;&lt;&#x2F;code&gt;这行判断，客户端首次连接shell时会在&lt;code&gt;$_SESSION&lt;&#x2F;code&gt;中保存一段代码，叫payload。结合后面突然出现的函数&lt;code&gt;run&lt;&#x2F;code&gt;，猜测这个payload在后续shell连接过程中可能会被调用。整个shell的运行原理到这里基本就能明确了，可以用下面的流程图来总结：&lt;&#x2F;p&gt;
-&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;vkceyugu.cdn.bspapp.com&#x2F;VKCEYUGU-imgbed&#x2F;a19bb97f-f0e1-4b79-aa01-4462838a080b.png&quot; width=&quot;50%&quot;&gt;&lt;&#x2F;img&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;&#x2F;images&#x2F;2020-12-05&#x2F;2.png&quot; width=&quot;50%&quot;&gt;&lt;&#x2F;img&gt;&lt;&#x2F;p&gt;
 &lt;h1 id=&quot;te-zheng-ti-qu&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#te-zheng-ti-qu&quot; aria-label=&quot;Anchor link for: te-zheng-ti-qu&quot;&gt;特征提取&lt;&#x2F;a&gt;&lt;&#x2F;h1&gt;
 &lt;p&gt;通常，流量层面对恶意行为进行检测，倾向于筛选出一些强特征、固定特征。例如检测使用ceye.io进行的OOB通信，只需要去匹配流量中包含&lt;code&gt;.+\.ceye\.io&lt;&#x2F;code&gt;的DNS请求，通过四元组即可判断受害主机和攻击者IP，这里&lt;code&gt;ceye.io&lt;&#x2F;code&gt;关键字就是固定特征。固定特征具有一致性、不易改变的特点，就好似与生俱来的特点。&lt;&#x2F;p&gt;
 &lt;h2 id=&quot;wa-jue-ge-si-la-qiang-te-zheng&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#wa-jue-ge-si-la-qiang-te-zheng&quot; aria-label=&quot;Anchor link for: wa-jue-ge-si-la-qiang-te-zheng&quot;&gt;挖掘哥斯拉强特征&lt;&#x2F;a&gt;&lt;&#x2F;h2&gt;
 &lt;p&gt;如何寻找哥斯拉的流量特征呢？最先想到的是先前冰蝎的捕获经验，即在shell的建连初期出现的强特征。至于HTTP头部的UA等特征，由于其易被改变，因此暂不考虑。开启Wireshark设置过滤条件，重新打开哥斯拉客户端并添加生成的shell：&lt;&#x2F;p&gt;
-&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;vkceyugu.cdn.bspapp.com&#x2F;VKCEYUGU-imgbed&#x2F;1063c9be-4e28-4fae-9aee-dcde7361ea44.gif&quot; width=&quot;70%&quot;&gt;&lt;&#x2F;img&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;&#x2F;images&#x2F;2020-12-05&#x2F;3.gif&quot; width=&quot;70%&quot;&gt;&lt;&#x2F;img&gt;&lt;&#x2F;p&gt;
 &lt;p&gt;此时未出现任何流量。继续右键进入，哥斯拉会返回目标的相关信息，Wireshark瞬间出现3个http包：&lt;&#x2F;p&gt;
-&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;vkceyugu.cdn.bspapp.com&#x2F;VKCEYUGU-imgbed&#x2F;8aa1d4f0-2cf7-4a9b-866c-1d47d7f0a488.gif&quot; width=&quot;70%&quot;&gt;&lt;&#x2F;img&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;&#x2F;images&#x2F;2020-12-05&#x2F;4.gif&quot; width=&quot;70%&quot;&gt;&lt;&#x2F;img&gt;&lt;&#x2F;p&gt;
 &lt;p&gt;跟踪http流，发现3个http包处在同一TCP中，说明哥斯拉使用了TCP长连接，这对流量特征分析比较有利。对这3个http包逐个分析一下。&lt;&#x2F;p&gt;
 &lt;p&gt;从shell的代码已知，客户端首次连接shell会上传一段代码payload，以备后续操作调用。查看其请求，发现内容长度居然超过23000字节。同时，http响应内容为空：&lt;&#x2F;p&gt;
-&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;vkceyugu.cdn.bspapp.com&#x2F;VKCEYUGU-imgbed&#x2F;ffb34788-2d21-4e08-b435-58da2232ee1f.png&quot; width=&quot;60%&quot;&gt;&lt;&#x2F;img&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;&#x2F;images&#x2F;2020-12-05&#x2F;5.png&quot; width=&quot;60%&quot;&gt;&lt;&#x2F;img&gt;&lt;&#x2F;p&gt;
 &lt;p&gt;使用&lt;code&gt;$F=O(E(O($_POST[$P]),$T))&lt;&#x2F;code&gt;对这一长串内容进行解密，得到payload的原始内容。好家伙，包含&lt;code&gt;run&lt;&#x2F;code&gt;、&lt;code&gt;bypass_open_basedir&lt;&#x2F;code&gt;、&lt;code&gt;formatParameter&lt;&#x2F;code&gt;、&lt;code&gt;evalFunc&lt;&#x2F;code&gt;等二十多个功能函数，具备代码执行、文件操作、数据库操作等诸多功能。&lt;&#x2F;p&gt;
 &lt;p&gt;第二个http的请求内容为：&lt;&#x2F;p&gt;
 &lt;p&gt;&lt;strong&gt;s4kur4=VzFlBQUiW1ljVSNFaWJUU2dXaQM%2BICcLZ2lYDA%3D%3D&lt;&#x2F;strong&gt;&lt;&#x2F;p&gt;
@@ -101,15 +101,15 @@
 &lt;li&gt;&lt;strong&gt;长度为l的字符串与长度为n的加密因子循环按位异或，密文的长度为l&lt;&#x2F;strong&gt;&lt;&#x2F;li&gt;
 &lt;&#x2F;ul&gt;
 &lt;p&gt;可以取出shell中的&lt;code&gt;E&lt;&#x2F;code&gt;函数，计算随机字符串的md5对固定字符串做异或，进行穷举验证：&lt;&#x2F;p&gt;
-&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;vkceyugu.cdn.bspapp.com&#x2F;VKCEYUGU-imgbed&#x2F;fed426a0-c5d6-409d-bbc2-e30d6b0e0542.png&quot; width=&quot;80%&quot;&gt;&lt;&#x2F;img&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;&#x2F;images&#x2F;2020-12-05&#x2F;6.png&quot; width=&quot;80%&quot;&gt;&lt;&#x2F;img&gt;&lt;&#x2F;p&gt;
 &lt;p&gt;对于哥斯拉中频繁使用的Base64编码，又会引出真理二：&lt;&#x2F;p&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;strong&gt;长度为l的字符串进行Base64编码后长度为定值&lt;&#x2F;strong&gt;&lt;&#x2F;li&gt;
 &lt;&#x2F;ul&gt;
 &lt;p&gt;熟悉Base64编码过程的同学应该知道，Base64本质上是由二进制向字符串转换的过程。对长度固定的随机字符串进行Base64编码，穷举验证：&lt;&#x2F;p&gt;
-&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;vkceyugu.cdn.bspapp.com&#x2F;VKCEYUGU-imgbed&#x2F;aeef8713-9c5a-4740-a09e-abb7f9998b43.png&quot; width=&quot;70%&quot;&gt;&lt;&#x2F;img&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;&#x2F;images&#x2F;2020-12-05&#x2F;7.png&quot; width=&quot;70%&quot;&gt;&lt;&#x2F;img&gt;&lt;&#x2F;p&gt;
 &lt;p&gt;现在基本可以下结论了，即哥斯拉上传的三个固定代码，密文的长度是固定的。计算了一下，分别是23068、40、60。如此一来就能总结出以下三条规则：&lt;&#x2F;p&gt;
-&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;vkceyugu.cdn.bspapp.com&#x2F;VKCEYUGU-imgbed&#x2F;242353c3-c4bd-41ed-9c1b-0749cdab6914.png&quot; width=&quot;65%&quot;&gt;&lt;&#x2F;img&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;&#x2F;images&#x2F;2020-12-05&#x2F;8.png&quot; width=&quot;65%&quot;&gt;&lt;&#x2F;img&gt;&lt;&#x2F;p&gt;
 &lt;h1 id=&quot;zeekqiao-miao-luo-di&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#zeekqiao-miao-luo-di&quot; aria-label=&quot;Anchor link for: zeekqiao-miao-luo-di&quot;&gt;Zeek巧妙落地&lt;&#x2F;a&gt;&lt;&#x2F;h1&gt;
 &lt;p&gt;对规则的落地要依托流量层检测的基础设施，上面总结出的三条规则具有上下文关联性，传统的IDS无法直接实现。这里的难点在于，需要一次性对三个数据包做实时判断，并且需要对包内容做一些字符串的切割、解码操作。能想到的要么是大数据实时计算，要么是Zeek了。&lt;&#x2F;p&gt;
 &lt;p&gt;想必熟悉Zeek的同学一定了解其统计框架&lt;a href=&quot;https:&#x2F;&#x2F;docs.zeek.org&#x2F;en&#x2F;current&#x2F;frameworks&#x2F;sumstats.html&quot;&gt;Summary Statistics&lt;&#x2F;a&gt;，你可以对符合特定条件的数据进行统计、计算。例如统计同一个源IP发起的SSH登录行为并计算次数，在某个时间段内超过阈值&lt;code&gt;$threshold&lt;&#x2F;code&gt;就产生一条SSH暴力破解的告警。在哥斯拉的场景里，可以巧妙的用Zeek统计框架收集同一TCP连接中的http数据。Zeek脚本语言也完全满足统计数据以后的匹配计算。&lt;&#x2F;p&gt;
@@ -149,14 +149,14 @@
 &lt;&#x2F;span&gt;&lt;span&gt;  }
 &lt;&#x2F;span&gt;&lt;span&gt;
 &lt;&#x2F;span&gt;&lt;span&gt;  local response_body: string = observe_str_vector[2];
-&lt;&#x2F;span&gt;&lt;span&gt;  # 规则2: 
+&lt;&#x2F;span&gt;&lt;span&gt;  # 规则2:
 &lt;&#x2F;span&gt;&lt;span&gt;  # 加密代码长度为40 &amp;amp;&amp;amp; HTTP响应内容长度为40 &amp;amp;&amp;amp; 响应内容首尾各16位md5字符串
 &lt;&#x2F;span&gt;&lt;span&gt;  if ( |request_body_only_value| == 40 &amp;amp;&amp;amp; |response_body| == 40 &amp;amp;&amp;amp; response_body == find_last(response_body, &#x2F;[a-z0-9]{16}.+[a-z0-9]{16}&#x2F;) )
 &lt;&#x2F;span&gt;&lt;span&gt;  {
 &lt;&#x2F;span&gt;&lt;span&gt;    sig2 = T;
 &lt;&#x2F;span&gt;&lt;span&gt;  }
 &lt;&#x2F;span&gt;&lt;span&gt;
-&lt;&#x2F;span&gt;&lt;span&gt;  # 规则3: 
+&lt;&#x2F;span&gt;&lt;span&gt;  # 规则3:
 &lt;&#x2F;span&gt;&lt;span&gt;  # 发送的加密代码长度为60 &amp;amp;&amp;amp; 响应内容首尾各16位md5字符串
 &lt;&#x2F;span&gt;&lt;span&gt;  if ( |request_body_only_value| == 60 &amp;amp;&amp;amp; response_body == find_last(response_body, &#x2F;[a-z0-9]{16}.+[a-z0-9]{16}&#x2F;) )
 &lt;&#x2F;span&gt;&lt;span&gt;  {
@@ -172,7 +172,7 @@
 &lt;&#x2F;span&gt;&lt;span&gt;}
 &lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
 &lt;p&gt;代码实现后，在服务器端启动PHP环境放置哥斯拉shell，启动Zeek监听网卡。本地客户端添加shell后点击进入，顺利打印出告警，令人欣慰：&lt;&#x2F;p&gt;
-&lt;p&gt;&lt;img src=&quot;https:&#x2F;&#x2F;vkceyugu.cdn.bspapp.com&#x2F;VKCEYUGU-imgbed&#x2F;f6f3e32b-ec23-4b5e-832a-328635ef1389.gif&quot; width=&quot;70%&quot;&gt;&lt;&#x2F;img&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;&#x2F;images&#x2F;2020-12-05&#x2F;9.gif&quot; width=&quot;70%&quot;&gt;&lt;&#x2F;img&gt;&lt;&#x2F;p&gt;
 &lt;h1 id=&quot;zong-jie&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#zong-jie&quot; aria-label=&quot;Anchor link for: zong-jie&quot;&gt;总结&lt;&#x2F;a&gt;&lt;&#x2F;h1&gt;
 &lt;p&gt;本文从哥斯拉php版的异或加密shell出发，探索了一种流量层检测哥斯拉的思路和方法。由于哥斯拉php版shell还有另一种加密器，还支持jsp版、.net版等多种情况，鉴于篇幅和工作量，本文未做一一分析和覆盖。正如文章前言所述，其实这样的检测分析文章不舍得发，一旦发了可能才是检测困难真正的开始。&lt;&#x2F;p&gt;
 &lt;p&gt;&lt;strong&gt;* 本文首发于&lt;a href=&quot;https:&#x2F;&#x2F;www.anquanke.com&#x2F;post&#x2F;id&#x2F;224831&quot;&gt;安全客&lt;&#x2F;a&gt;，转载请注明作者及来源&lt;&#x2F;strong&gt;&lt;&#x2F;p&gt;
